@@ -4,77 +4,107 @@
 
 This repository implements a complete Azure Virtual Desktop (AVD) platform using modern cloud engineering and Infrastructure as Code (IaC) practices.
 
-The platform is designed around the following principles:
+The platform is designed around:
 
-- Infrastructure as Code (Terraform)
-- OIDC-based authentication
-- GitHub Actions CI/CD
-- Enterprise modular architecture
-- Golden Image deployment strategy
-- Azure Compute Gallery integration
-- Monitoring and observability by design
-- Repeatable deployments
-- Multi-environment support
-- No client secrets
-- No manual image management
+- Terraform
+- OIDC Authentication
+- GitHub Actions
+- Azure Compute Gallery
+- Golden Images
+- FSLogix
+- Enterprise Monitoring
+- Multi-Environment Deployments
+- Documentation Driven Development
+
+The goal is to build a predictable, maintainable, and fully automated Azure Virtual Desktop platform with complete ownership of every component.
 
 ---
 
 # 2. Architecture Principles
 
-## Principle 1 - OIDC First
+## Principle 1 - OIDC Authentication
 
-Authentication between GitHub and Azure must use OIDC federation.
+GitHub Actions must authenticate to Azure using OIDC Federation.
 
-Client secrets are prohibited.
+No client secrets shall be used.
 
-### Approved Flow
+### Approved Authentication Flow
 
 ```text
 GitHub Actions
-       │
-       ▼
+
+      │
+
+      ▼
+
 OIDC Token
-       │
-       ▼
-Azure App Registration
-       │
-       ▼
-Azure Resources
+
+      │
+
+      ▼
+
+AK-GitHub-OIDC
+
+      │
+
+      ▼
+
+AK-SPN-AVD
+
+      │
+
+      ▼
+
+Azure Subscription
 ```
 
-### Not Allowed
+### Prohibited Authentication Methods
 
 ```text
-GitHub Secret
 Client Secret
+
 Username
+
 Password
+
+Personal Access Token
 ```
 
 ---
 
 ## Principle 2 - Golden Image First
 
-Session hosts shall never be deployed from Marketplace images.
+All session hosts must be deployed from Azure Compute Gallery images.
 
-All session hosts must be deployed from internally managed images stored in Azure Compute Gallery.
+Marketplace images shall never be used directly for AVD session host deployment.
 
-### Approved Flow
+### Approved Image Flow
 
 ```text
 Packer
-    │
-    ▼
+
+   │
+
+   ▼
+
 Ansible
-    │
-    ▼
+
+   │
+
+   ▼
+
 Golden Image
-    │
-    ▼
+
+   │
+
+   ▼
+
 Azure Compute Gallery
-    │
-    ▼
+
+   │
+
+   ▼
+
 Session Hosts
 ```
 
@@ -82,14 +112,17 @@ Session Hosts
 
 ## Principle 3 - Modular Terraform
 
-Each component must be implemented as an independent Terraform module.
+Every workload must exist in its own Terraform module.
 
 Modules communicate only through:
 
-- Variables
-- Outputs
+```text
+Variables
 
-Modules must never reference each other internally.
+Outputs
+```
+
+Modules must never directly reference resources from another module.
 
 ---
 
@@ -97,25 +130,35 @@ Modules must never reference each other internally.
 
 Monitoring must exist before session hosts are deployed.
 
-Monitoring is not an afterthought.
+Every deployed component must support:
 
-All AVD components must publish logs and metrics into Azure Monitor.
+```text
+Logs
+
+Metrics
+
+Alerts
+
+Workbooks
+```
 
 ---
 
 ## Principle 5 - Documentation Driven Development
 
-Every module requires:
+Documentation must be completed before implementation.
+
+Required documents:
 
 ```text
-README.md
-main.tf
-variables.tf
-outputs.tf
-versions.tf
-```
+Architecture.md
 
-Documentation is part of the deliverable.
+NamingConvention.md
+
+Roadmap.md
+
+ModuleContracts.md
+```
 
 ---
 
@@ -126,8 +169,6 @@ Azure_Virtual_Desktop/
 │
 ├── .github/
 │   └── workflows/
-│
-├── bootstrap/
 │
 ├── image-factory/
 │   ├── packer/
@@ -162,140 +203,272 @@ Azure_Virtual_Desktop/
 
 ---
 
-# 4. High-Level Platform Architecture
+# 4. Bootstrap Architecture
+
+The platform bootstrap process is intentionally manual.
+
+Terraform does not deploy its own bootstrap components.
+
+---
+
+## Bootstrap Resources
+
+The following resources are manually created once:
 
 ```text
-                              GitHub
+AK-RG-TFSTATE
 
-                                 │
+aksttfstate
 
-                                 ▼
+tfstate
 
-                        GitHub Actions
+AK-SPN-AVD
 
-                                 │
-
-                                 ▼
-
-                       OIDC Authentication
-
-                                 │
-
-                                 ▼
-
-                           Azure Tenant
-
-                                 │
-
-                 ┌───────────────┼───────────────┐
-
-                 │                               │
-
-                 ▼                               ▼
-
-       Azure Compute Gallery               Terraform
-
-                 │                               │
-
-                 ▼                               ▼
-
-          Golden Images                  Azure Resources
-
-                                                 │
-
-                     ┌───────────────────────────┼───────────────────────────┐
-
-                     │                           │                           │
-
-                     ▼                           ▼                           ▼
-
-                 Networking                  AVD Core                 Monitoring
-
-                     │                           │                           │
-
-                     └───────────────┬───────────┴───────────────┬──────────┘
-
-                                     │
-
-                                     ▼
-
-                                Session Hosts
-
-                                     │
-
-                                     ▼
-
-                                 FSLogix
+AK-GitHub-OIDC
 ```
 
 ---
 
-# 5. Image Factory Architecture
+## Bootstrap Process
 
-Image management is a first-class component of the platform.
+```text
+Azure Portal
 
-Session hosts are dependent upon image creation.
+      │
+
+      ▼
+
+Create Resource Group
+
+      │
+
+      ▼
+
+Create Storage Account
+
+      │
+
+      ▼
+
+Create Blob Container
+
+      │
+
+      ▼
+
+Create App Registration
+
+      │
+
+      ▼
+
+Create Federated Credential
+
+      │
+
+      ▼
+
+Assign RBAC
+
+      │
+
+      ▼
+
+Validate GitHub Authentication
+```
 
 ---
 
-## Image Build Flow
+## Bootstrap Principle
+
+Terraform begins only after:
+
+```text
+OIDC Authentication
+
+Remote State
+
+RBAC Assignments
+```
+
+have been successfully established.
+
+---
+
+# 5. Identity Architecture
+
+The platform uses a single deployment identity.
+
+---
+
+## App Registration
+
+```text
+AK-SPN-AVD
+```
+
+Responsibilities:
+
+```text
+Terraform Deployments
+
+Image Factory
+
+Azure Compute Gallery
+
+Azure Virtual Desktop
+
+Monitoring
+
+Networking
+
+Future Platform Components
+```
+
+---
+
+## Federated Credential
+
+```text
+AK-GitHub-OIDC
+```
+
+Used by:
+
+```text
+GitHub Actions
+```
+
+---
+
+## RBAC Design
+
+Initial Role Assignments:
+
+```text
+Contributor
+
+Storage Blob Data Contributor
+```
+
+Future role assignments may be added as required.
+
+---
+
+# 6. High-Level Platform Architecture
+
+```text
+                           GitHub
+
+                              │
+
+                              ▼
+
+                       GitHub Actions
+
+                              │
+
+                              ▼
+
+                     OIDC Authentication
+
+                              │
+
+                              ▼
+
+                         AK-SPN-AVD
+
+                              │
+
+                              ▼
+
+                     Azure Subscription
+
+                              │
+
+    ┌─────────────────────────┼─────────────────────────┐
+
+    │                         │                         │
+
+    ▼                         ▼                         ▼
+
+Compute Gallery         Terraform Core          Monitoring
+
+    │                         │                         │
+
+    ▼                         ▼                         ▼
+
+Golden Images        Platform Resources      Log Analytics
+
+    │
+
+    ▼
+
+Session Hosts
+
+    │
+
+    ▼
+
+FSLogix
+```
+
+---
+
+# 7. Image Factory Architecture
+
+Image Factory is a first-class platform component.
+
+Session hosts depend on image availability.
+
+---
+
+## Image Build Process
 
 ```text
 GitHub Workflow
 
-      │
+       │
 
-      ▼
+       ▼
 
 OIDC Login
 
-      │
+       │
 
-      ▼
+       ▼
 
-Azure Build VM
+Build VM
 
-      │
+       │
 
-      ▼
+       ▼
 
 Packer
 
-      │
+       │
 
-      ▼
+       ▼
 
 Ansible
 
-      │
+       │
 
-      ▼
+       ▼
 
-Windows Configuration
+Operating System Configuration
 
-      │
+       │
 
-      ▼
+       ▼
 
 Sysprep
 
-      │
+       │
 
-      ▼
-
-Capture Image
-
-      │
-
-      ▼
+       ▼
 
 Azure Compute Gallery
-
-      │
-
-      ▼
-
-Image Version Published
 ```
 
 ---
@@ -308,7 +481,7 @@ Image Version Published
 Windows 11 Enterprise Multi-Session
 ```
 
-### Required Components
+### Installed Components
 
 ```text
 Azure Monitor Agent
@@ -322,33 +495,31 @@ FSLogix
 Microsoft 365 Apps
 ```
 
-### Future Components
+---
+
+## Future Components
 
 ```text
 OneDrive
 
-Teams
+Microsoft Teams
 
-Custom Applications
+Enterprise Applications
 
 Security Baselines
-
-Hardening Controls
 ```
 
 ---
 
-# 6. Azure Virtual Desktop Architecture
+# 8. Azure Virtual Desktop Architecture
 
-Control plane resources are deployed before session hosts.
+The AVD control plane is deployed before session hosts.
 
 ---
 
 ## Components
 
 ### Workspace
-
-Provides user entry point.
 
 ```text
 AK-AVD-<ENV>-WS
@@ -358,27 +529,29 @@ AK-AVD-<ENV>-WS
 
 ### Host Pool
 
-Provides AVD session management.
-
 ```text
 AK-AVD-<ENV>-HP
 ```
 
 ---
 
-### Application Group
-
-Publishes desktops and applications.
+### Desktop Application Group
 
 ```text
 AK-AVD-<ENV>-DAG
+```
 
+---
+
+### Remote Application Group
+
+```text
 AK-AVD-<ENV>-RAG
 ```
 
 ---
 
-## AVD Flow
+## Connection Flow
 
 ```text
 User
@@ -405,78 +578,90 @@ Host Pool
 
   ▼
 
-Session Hosts
+Session Host
 ```
 
 ---
 
-# 7. Session Host Architecture
+# 9. Session Host Architecture
 
-Session hosts use Compute Gallery images only.
+Session hosts are always deployed from Azure Compute Gallery.
 
-### Image Source
+---
+
+## Session Host Flow
 
 ```text
 Azure Compute Gallery
-```
 
-### Deployment
+         │
 
-```text
-Image Version
+         ▼
 
-       │
+Golden Image
 
-       ▼
+         │
+
+         ▼
 
 Session Host VM
 
-       │
+         │
 
-       ▼
+         ▼
 
 AVD Registration
 
-       │
+         │
 
-       ▼
+         ▼
 
 Host Pool
 ```
 
 ---
 
-# 8. Monitoring Architecture
+## Session Host Responsibilities
 
-Monitoring is deployed before session hosts.
+```text
+User Sessions
+
+FSLogix Connectivity
+
+Monitoring Data
+
+AVD Registration
+```
+
+---
+
+# 10. Monitoring Architecture
+
+Monitoring is delivered before production workloads.
 
 ---
 
 ## Components
 
-### Log Analytics Workspace
-
-Central monitoring repository.
-
-### Data Collection Rules
-
-Collect:
-
 ```text
-CPU
+Log Analytics Workspace
 
-Memory
+Diagnostic Settings
 
-Disk
+Data Collection Rules
 
-Events
+Data Collection Rule Associations
 
-Performance Data
+Workbook
+
+Action Groups
+
+Alerts
 ```
 
-### Diagnostic Settings
+---
 
-Collect:
+## AVD Monitoring Scope
 
 ```text
 WVDConnections
@@ -488,44 +673,46 @@ WVDCheckpoints
 WVDManagement
 ```
 
-### Workbook
+---
 
-Single-pane-of-glass monitoring dashboard.
+## Session Host Monitoring Scope
 
-### Alerts
+```text
+CPU
 
-Operational alerting.
+Memory
+
+Disk
+
+Heartbeat
+
+Windows Events
+```
 
 ---
 
-# Monitoring Flow
+## Monitoring Pipeline
 
 ```text
-Host Pool
+Azure Resources
 
-Workspace
+      │
 
-Application Group
-
-Session Hosts
-
-       │
-
-       ▼
+      ▼
 
 Diagnostic Settings
 
-       │
+      │
 
-       ▼
+      ▼
 
 Log Analytics Workspace
 
-       │
+      │
 
-       ▼
+      ▼
 
-Workbooks
+Workbook
 
 Alerts
 
@@ -534,11 +721,11 @@ Action Groups
 
 ---
 
-# 9. FSLogix Architecture
+# 11. FSLogix Architecture
 
 FSLogix is installed during image creation.
 
-Session hosts do not configure FSLogix locally.
+Session hosts consume FSLogix rather than configure it.
 
 ---
 
@@ -563,94 +750,74 @@ FSLogix
 
    ▼
 
-Profile Container Storage
+Profile Storage
 ```
 
-### Backend Storage Options
+---
+
+## Supported Storage
 
 ```text
 Azure Files
-
-or
 
 Azure NetApp Files
 ```
 
 ---
 
-# 10. CI/CD Architecture
+# 12. CI/CD Architecture
 
 All deployments originate from GitHub Actions.
 
 ---
 
-## Infrastructure Deployment
+## Terraform Deployment Flow
 
 ```text
-GitHub
+GitHub Workflow
 
-   │
+       │
 
-   ▼
+       ▼
+
+Environment Selection
+
+       │
+
+       ▼
+
+OIDC Authentication
+
+       │
+
+       ▼
+
+Terraform Validate
+
+       │
+
+       ▼
 
 Terraform Plan
 
-   │
+       │
 
-   ▼
-
-Approval
-
-   │
-
-   ▼
+       ▼
 
 Terraform Apply
 
-   │
+       │
 
-   ▼
+       ▼
 
 Azure Resources
 ```
 
 ---
 
-## Image Deployment
+## Environment Strategy
 
-```text
-GitHub
-
-   │
-
-   ▼
-
-Image Build Workflow
-
-   │
-
-   ▼
-
-Packer
-
-   │
-
-   ▼
-
-Ansible
-
-   │
-
-   ▼
-
-Azure Compute Gallery
-```
-
----
-
-# 11. Future Growth
-
-The architecture is designed to support:
+A single workflow supports:
 
 ```text
 DEV
@@ -660,38 +827,68 @@ TEST
 PROD
 ```
 
-and future enhancements such as:
+The selected environment determines:
+
+```text
+Terraform Variables
+
+Deployment Scope
+
+Resource Naming
+
+Terraform State
+```
+
+Authentication remains:
+
+```text
+AK-GitHub-OIDC
+
+AK-SPN-AVD
+```
+
+for all environments.
+
+---
+
+# 13. Future Platform Enhancements
+
+Planned future capabilities:
 
 ```text
 Scaling Plans
 
-Defender for Cloud
-
 Azure Policy
+
+Microsoft Defender
 
 Backup
 
 Update Manager
 
-Cost Management
+Executive Dashboards
 
 Advanced Reporting
 
-Executive Dashboards
+Cost Management
 ```
-
-without requiring redesign.
 
 ---
 
-# Architecture Summary
+# 14. Architecture Summary
 
-The Azure Virtual Desktop Enterprise Platform is built around five pillars:
+The platform is built around five core pillars:
 
-1. OIDC Authentication
-2. Golden Image Strategy
-3. Modular Terraform
-4. Enterprise Monitoring
-5. Automated Delivery
+```text
+OIDC Authentication
 
-This architecture ensures secure, repeatable, and maintainable Azure Virtual Desktop deployments at enterprise scale.
+Golden Image Strategy
+
+Modular Terraform
+
+Enterprise Monitoring
+
+Automated Delivery
+```
+
+Every component of the Azure Virtual Desktop platform must align with these principles.

@@ -75,7 +75,7 @@ The standard naming format is:
 <Prefix>-<Workload>-<Environment>-<ResourceType>
 ```
 
-Example:
+Examples:
 
 ```text
 AK-AVD-DEV-RG
@@ -87,7 +87,91 @@ AK-AVD-TEST-LAW
 
 ---
 
-# 4. Azure Resource Naming Standards
+# 4. Bootstrap Resource Standards
+
+The bootstrap resources are manually created before Terraform is introduced.
+
+Terraform does not manage bootstrap resources.
+
+---
+
+## Resource Group
+
+```text
+AK-RG-TFSTATE
+```
+
+---
+
+## Storage Account
+
+```text
+akavdtfstate
+```
+
+Storage account names must remain lowercase.
+
+---
+
+## Blob Container
+
+```text
+tfstate
+```
+
+---
+
+## App Registration
+
+```text
+AK-SPN-AVD
+```
+
+Purpose:
+
+```text
+Terraform Deployments
+
+Image Factory
+
+Azure Virtual Desktop
+
+Monitoring
+
+Future Platform Components
+```
+
+---
+
+## Federated Credential
+
+```text
+AK-GitHub-OIDC
+```
+
+Purpose:
+
+```text
+GitHub Actions Authentication
+```
+
+This federated credential is shared across:
+
+```text
+DEV
+
+TEST
+
+PROD
+```
+
+environments.
+
+Environment selection is controlled through the workflow parameter and not through separate federated credentials.
+
+---
+
+# 5. Azure Resource Naming Standards
 
 ## Resource Group
 
@@ -117,10 +201,12 @@ Pattern:
 AK-AVD-<ENV>-VNET
 ```
 
-Example:
+Examples:
 
 ```text
 AK-AVD-DEV-VNET
+
+AK-AVD-PROD-VNET
 ```
 
 ---
@@ -138,9 +224,9 @@ Examples:
 ```text
 AK-AVD-DEV-SNET-SESSIONHOSTS
 
-AK-AVD-DEV-SNET-MANAGEMENT
-
 AK-AVD-DEV-SNET-BUILD
+
+AK-AVD-DEV-SNET-MANAGEMENT
 ```
 
 ---
@@ -181,7 +267,7 @@ AK-AVD-PROD-RT
 
 ---
 
-# 5. Azure Compute Gallery Naming Standards
+# 6. Azure Compute Gallery Standards
 
 ## Azure Compute Gallery
 
@@ -197,7 +283,7 @@ Example:
 AK-AVD-ACG
 ```
 
-One gallery supports all environments.
+A single gallery supports all environments.
 
 ---
 
@@ -222,8 +308,6 @@ Multi-Session
 Future examples:
 
 ```text
-AK-WIN11-MS
-
 AK-WIN11-SINGLE
 
 AK-WIN2025-RDS
@@ -251,45 +335,51 @@ Examples:
 2.0.0
 ```
 
+---
+
 ### Major Version
 
 Used for:
 
 ```text
-New Operating System
+Operating System Upgrades
 
-Major platform redesign
+Major Platform Changes
 
-Architectural changes
+Architectural Redesigns
 ```
+
+---
 
 ### Minor Version
 
 Used for:
 
 ```text
-New software
+New Features
 
-Feature additions
+New Applications
 
-Configuration improvements
+Configuration Enhancements
 ```
+
+---
 
 ### Patch Version
 
 Used for:
 
 ```text
-Security updates
+Security Updates
 
-Bug fixes
+Bug Fixes
 
-Minor configuration changes
+Maintenance Releases
 ```
 
 ---
 
-# 6. Azure Virtual Desktop Naming Standards
+# 7. Azure Virtual Desktop Naming Standards
 
 ## Workspace
 
@@ -363,7 +453,7 @@ AK-AVD-PROD-RAG
 
 ---
 
-# 7. Session Host Naming Standards
+# 8. Session Host Naming Standards
 
 ## Session Host Virtual Machine
 
@@ -427,7 +517,7 @@ AK-AVD-PROD-DISK01
 
 ---
 
-# 8. Monitoring Naming Standards
+# 9. Monitoring Naming Standards
 
 ## Log Analytics Workspace
 
@@ -501,7 +591,7 @@ AK-AVD-PROD-AG
 
 ---
 
-# 9. Identity Naming Standards
+# 10. Identity Naming Standards
 
 ## App Registration
 
@@ -519,51 +609,41 @@ AK-SPN-AVD
 
 ---
 
-## Federated Credentials
+## Federated Credential
 
 Pattern:
 
 ```text
-AK-GitHub-<ENV>-OIDC
+AK-GitHub-OIDC
 ```
 
-Examples:
+Example:
 
 ```text
-AK-GitHub-DEV-OIDC
-
-AK-GitHub-TEST-OIDC
-
-AK-GitHub-PROD-OIDC
+AK-GitHub-OIDC
 ```
+
+Environment-specific OIDC credentials are prohibited.
+
+A single federated credential is used across all deployment environments.
 
 ---
 
-# 10. Azure AD Group Naming Standards
+## Azure AD Groups
 
-## Administrators
-
-Pattern:
+### Administrators
 
 ```text
 AK-AVD-Admins
 ```
 
----
-
-## Users
-
-Pattern:
+### Users
 
 ```text
 AK-AVD-Users
 ```
 
----
-
-## Helpdesk
-
-Pattern:
+### Helpdesk
 
 ```text
 AK-AVD-Helpdesk
@@ -571,61 +651,7 @@ AK-AVD-Helpdesk
 
 ---
 
-# 11. Terraform Backend Naming Standards
-
-## Resource Group
-
-Pattern:
-
-```text
-AK-RG-TFSTATE
-```
-
----
-
-## Storage Account
-
-Pattern:
-
-```text
-aksttfstate
-```
-
-Storage account names must remain lowercase.
-
----
-
-## Container
-
-Pattern:
-
-```text
-tfstate
-```
-
----
-
-## State Files
-
-Pattern:
-
-```text
-<environment>.tfstate
-```
-
-Examples:
-
-```text
-dev.tfstate
-
-test.tfstate
-
-prod.tfstate
-```
-
----
-
-# 12. Terraform Naming Standards
+# 11. Terraform Standards
 
 ## Local Values
 
@@ -659,7 +685,7 @@ name = "${local.prefix}-${local.workload}-${local.environment}-RG"
 
 ---
 
-# 13. GitHub Standards
+# 12. GitHub Standards
 
 ## Repository Name
 
@@ -711,19 +737,41 @@ Image Factory:
 build-image.yml
 ```
 
-Future workflows:
+Future Workflows:
 
 ```text
-destroy-environment.yml
-
 release-image.yml
+
+destroy-environment.yml
+```
+
+---
+
+# 13. Terraform State Standards
+
+## State File Naming
+
+Pattern:
+
+```text
+<environment>.tfstate
+```
+
+Examples:
+
+```text
+dev.tfstate
+
+test.tfstate
+
+prod.tfstate
 ```
 
 ---
 
 # 14. Tagging Standards
 
-All Azure resources must include:
+All resources must include:
 
 ```hcl
 tags = {
@@ -734,7 +782,7 @@ tags = {
 }
 ```
 
-Additional tags may be added as required.
+Additional tags may be added as required by future governance requirements.
 
 ---
 
@@ -748,6 +796,22 @@ Prefix      = AK
 Workload    = AVD
 
 Environments = DEV | TEST | PROD
+```
+
+---
+
+## Bootstrap Resources
+
+```text
+AK-RG-TFSTATE
+
+akavdtfstate
+
+tfstate
+
+AK-SPN-AVD
+
+AK-GitHub-OIDC
 ```
 
 ---
@@ -776,4 +840,4 @@ AK-AVD-DEV-WB
 AK-AVD-DEV-SH01
 ```
 
-These standards shall be applied consistently across all platform components and future enhancements.
+These standards shall be applied consistently across all platform resources, modules, workflows, and future enhancements.

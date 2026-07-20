@@ -2,93 +2,130 @@
 
 # 1. Project Overview
 
-The purpose of this project is to build a production-ready Azure Virtual Desktop (AVD) platform using modern cloud engineering practices.
+The objective of this project is to build a production-ready Azure Virtual Desktop platform using modern cloud engineering practices.
 
 The platform will be:
 
-- Terraform driven
-- OIDC authenticated
-- GitHub Actions managed
-- Golden Image based
-- Azure Compute Gallery integrated
-- FSLogix enabled
-- Enterprise monitored
-- Multi-environment ready
-- Fully documented
+- Terraform Managed
+- GitHub Actions Driven
+- OIDC Authenticated
+- Azure Compute Gallery Integrated
+- Golden Image Based
+- FSLogix Enabled
+- Enterprise Monitored
+- Multi-Environment Ready
+- Fully Documented
 
-The objective is to build a platform that is maintainable, repeatable, secure, and easy to understand from Day 1.
-
----
-
-# 2. Project Goals
-
-## Primary Goals
-
-- Eliminate manual deployment activities
-- Use OIDC instead of client secrets
-- Deploy session hosts from Golden Images
-- Implement monitoring before production workloads
-- Standardize deployments across environments
-- Create reusable Terraform modules
-- Document every major design decision
+The platform must be maintainable, repeatable, secure, and fully understood by platform operators.
 
 ---
 
-## Non-Goals
+# 2. Guiding Principles
 
-The following are not required during initial implementation:
+## OIDC Authentication
+
+Authentication must use:
 
 ```text
-Hybrid AD Join
+GitHub Actions
 
-Multi-region DR
+OIDC
 
-Azure Virtual WAN
+Federated Credential
 
-Multi-tenant AVD
+AK-SPN-AVD
 ```
 
-These may be introduced in future phases.
+Client secrets are prohibited.
 
 ---
 
-# 3. Phase Delivery Strategy
+## Golden Image Strategy
 
-The platform will be built in phases.
+Session Hosts must be deployed only from:
 
-Each phase has:
+```text
+Azure Compute Gallery
+```
 
-- Objective
-- Deliverables
-- Dependencies
-- Success Criteria
-
-A phase is considered complete only when all success criteria are met.
+Marketplace images shall not be used directly.
 
 ---
 
-# Phase 1 - Bootstrap & OIDC Foundation
+## Documentation First
 
-## Objective
+Documentation precedes implementation.
 
-Create the core deployment foundation.
+Required documents:
 
-Establish secure authentication between GitHub and Azure using OIDC.
+```text
+Architecture.md
 
-No infrastructure deployment should occur before this phase is complete.
+NamingConvention.md
+
+Roadmap.md
+
+ModuleContracts.md
+```
+
+must be maintained throughout the project lifecycle.
+
+---
+
+## Modular Design
+
+Every major workload must exist as an independent Terraform module.
+
+---
+
+## Monitoring By Design
+
+Monitoring must be implemented before production session hosts are deployed.
+
+---
+
+# 3. Project Phases
+
+The platform is delivered in phases.
+
+Each phase contains:
+
+```text
+Objective
+
+Deliverables
+
+Dependencies
+
+Success Criteria
+```
+
+Implementation begins only after design and documentation are complete.
+
+---
+
+# Phase 1A - Manual Bootstrap
+
+# Objective
+
+Create the foundational components required before Terraform can authenticate to Azure.
+
+Bootstrap resources are intentionally created manually.
+
+Terraform does not manage bootstrap resources.
 
 ---
 
 ## Deliverables
 
-### Terraform Backend
+### Terraform Backend Resources
 
 ```text
-Resource Group
+AK-RG-TFSTATE
 
-Storage Account
+akavdtfstate
 
-Blob Container
+tfstate
 ```
 
 ---
@@ -96,33 +133,31 @@ Blob Container
 ### Azure Identity
 
 ```text
-App Registration
+AK-SPN-AVD
 
-Service Principal
-
-Federated Credentials
+AK-GitHub-OIDC
 ```
 
 ---
 
-### Role Assignments
+### RBAC Assignments
 
 ```text
 Contributor
 
 Storage Blob Data Contributor
-
-User Access Administrator
 ```
 
 ---
 
-### GitHub Workflows
+### GitHub Repository Configuration
 
 ```text
-terraform-plan.yml
+GitHub Repository
 
-terraform-apply.yml
+GitHub Environments
+
+GitHub Permissions
 ```
 
 ---
@@ -135,18 +170,95 @@ None
 
 ## Success Criteria
 
-- Terraform state stored remotely
-- GitHub can authenticate using OIDC
-- No client secrets exist
-- Terraform plan executes successfully
+```text
+Storage Account Created
+
+Terraform State Container Created
+
+App Registration Created
+
+Federated Credential Created
+
+RBAC Verified
+```
+
+---
+
+# Phase 1B - OIDC Validation
+
+# Objective
+
+Validate GitHub authentication to Azure before infrastructure deployment begins.
+
+---
+
+## Deliverables
+
+### GitHub Workflow
+
+```text
+terraform-plan.yml
+```
+
+---
+
+### Authentication Validation
+
+```text
+GitHub Actions
+
+      │
+
+      ▼
+
+OIDC
+
+      │
+
+      ▼
+
+AK-GitHub-OIDC
+
+      │
+
+      ▼
+
+AK-SPN-AVD
+
+      │
+
+      ▼
+
+Azure Subscription
+```
+
+---
+
+## Dependencies
+
+Phase 1A
+
+---
+
+## Success Criteria
+
+```text
+GitHub Authentication Successful
+
+Azure Login Successful
+
+Terraform Init Successful
+
+Terraform Validate Successful
+```
 
 ---
 
 # Phase 2 - Repository Framework
 
-## Objective
+# Objective
 
-Establish repository standards and project structure.
+Establish the repository structure and coding standards.
 
 ---
 
@@ -155,17 +267,15 @@ Establish repository standards and project structure.
 ### Repository Structure
 
 ```text
-.github/
+.github
 
-bootstrap/
+image-factory
 
-image-factory/
+modules
 
-modules/
+environments
 
-environments/
-
-docs/
+docs
 ```
 
 ---
@@ -184,27 +294,41 @@ ModuleContracts.md
 
 ---
 
+### Repository Standards
+
+```text
+Terraform Standards
+
+Documentation Standards
+
+Naming Standards
+```
+
+---
+
 ## Dependencies
 
-Phase 1
+Phase 1B
 
 ---
 
 ## Success Criteria
 
-- Repository structure finalized
-- Naming conventions approved
-- Documentation baseline established
+```text
+Repository Structure Approved
+
+Documentation Approved
+
+Standards Finalized
+```
 
 ---
 
 # Phase 3 - Azure Compute Gallery Foundation
 
-## Objective
+# Objective
 
-Build image infrastructure before any virtual machine deployment.
-
-The platform will use Golden Images from the beginning.
+Create image infrastructure before any virtual machine deployment.
 
 ---
 
@@ -213,11 +337,15 @@ The platform will use Golden Images from the beginning.
 ### Azure Compute Gallery
 
 ```text
-Azure Compute Gallery
+AK-AVD-ACG
+```
 
-Image Definition
+---
 
-Versioning Framework
+### Image Definition
+
+```text
+AK-WIN11-MS
 ```
 
 ---
@@ -238,15 +366,19 @@ Phase 2
 
 ## Success Criteria
 
-- Compute Gallery deployed
-- Image Definition deployed
-- Image versioning strategy documented
+```text
+Compute Gallery Deployed
+
+Image Definition Created
+
+Image Versioning Strategy Defined
+```
 
 ---
 
 # Phase 4 - Image Factory
 
-## Objective
+# Objective
 
 Implement automated Golden Image creation.
 
@@ -254,67 +386,43 @@ Implement automated Golden Image creation.
 
 ## Deliverables
 
-### Image Factory Components
+### Packer
 
 ```text
-Packer
-
-Ansible
-
-GitHub Actions Workflow
+Windows Image Build
 ```
 
 ---
 
-### Golden Image Build Workflow
+### Ansible
 
 ```text
-GitHub
-
-  │
-
-  ▼
-
-OIDC
-
-  │
-
-  ▼
-
-Packer
-
-  │
-
-  ▼
-
-Build VM
-
-  │
-
-  ▼
-
-Ansible
-
-  │
-
-  ▼
-
-Sysprep
-
-  │
-
-  ▼
-
-Azure Compute Gallery
+Image Configuration
 ```
 
 ---
 
-### Initial Software
+### GitHub Workflow
+
+```text
+build-image.yml
+```
+
+---
+
+## Initial Software
+
+### Operating System
 
 ```text
 Windows 11 Enterprise Multi-Session
+```
 
+---
+
+### Components
+
+```text
 Azure Monitor Agent
 
 AVD Agent
@@ -328,6 +436,50 @@ Microsoft 365 Apps
 
 ---
 
+## Image Build Flow
+
+```text
+GitHub Actions
+
+      │
+
+      ▼
+
+OIDC Authentication
+
+      │
+
+      ▼
+
+Packer
+
+      │
+
+      ▼
+
+Build VM
+
+      │
+
+      ▼
+
+Ansible
+
+      │
+
+      ▼
+
+Sysprep
+
+      │
+
+      ▼
+
+Azure Compute Gallery
+```
+
+---
+
 ## Dependencies
 
 Phase 3
@@ -336,24 +488,45 @@ Phase 3
 
 ## Success Criteria
 
-- Image created automatically
-- Image published to gallery
-- Image versioning operational
-- No manual image capture process exists
+```text
+Golden Image Builds Successfully
+
+Image Published To Gallery
+
+Versioning Operational
+
+No Manual Image Creation
+```
 
 ---
 
 # Phase 5 - Core Infrastructure Foundation
 
-## Objective
+# Objective
 
-Deploy the core Azure networking resources.
+Deploy foundational Azure resources.
 
 ---
 
 ## Deliverables
 
-### Networking
+### Resource Group Module
+
+```text
+modules/resource-group
+```
+
+---
+
+### Networking Module
+
+```text
+modules/networking
+```
+
+---
+
+### Resources
 
 ```text
 Virtual Network
@@ -361,16 +534,6 @@ Virtual Network
 Subnets
 
 Network Security Groups
-```
-
----
-
-### Terraform Modules
-
-```text
-resource-group
-
-networking
 ```
 
 ---
@@ -383,17 +546,21 @@ Phase 4
 
 ## Success Criteria
 
-- Network deployed successfully
-- Session host subnet available
-- Build subnet available (if required)
+```text
+Networking Operational
+
+Subnets Available
+
+Platform Ready For AVD
+```
 
 ---
 
 # Phase 6 - Identity & Access Control
 
-## Objective
+# Objective
 
-Implement role-based access control design.
+Implement group-based access management.
 
 ---
 
@@ -411,7 +578,7 @@ AK-AVD-Helpdesk
 
 ---
 
-### Role Assignments
+### RBAC
 
 ```text
 Desktop Virtualization User
@@ -424,7 +591,7 @@ Virtual Machine User Login
 ### Terraform Module
 
 ```text
-identity
+modules/identity
 ```
 
 ---
@@ -437,33 +604,48 @@ Phase 5
 
 ## Success Criteria
 
-- No hardcoded user object IDs
-- Group-based assignments operational
+```text
+Group-Based Access Control Working
+
+No Hardcoded Object IDs
+```
 
 ---
 
 # Phase 7 - Azure Virtual Desktop Core
 
-## Objective
+# Objective
 
-Deploy the AVD control plane.
+Deploy AVD control-plane resources.
 
-No session hosts are deployed during this phase.
+Session Hosts are not deployed during this phase.
 
 ---
 
 ## Deliverables
 
-### Azure Virtual Desktop Resources
+### Workspace
 
 ```text
-Workspace
+AK-AVD-<ENV>-WS
+```
 
-Host Pool
+---
 
-Application Group
+### Host Pool
 
-Associations
+```text
+AK-AVD-<ENV>-HP
+```
+
+---
+
+### Application Groups
+
+```text
+AK-AVD-<ENV>-DAG
+
+AK-AVD-<ENV>-RAG
 ```
 
 ---
@@ -471,11 +653,11 @@ Associations
 ### Terraform Modules
 
 ```text
-avd-workspace
+modules/avd-workspace
 
-avd-hostpool
+modules/avd-hostpool
 
-avd-appgroup
+modules/avd-appgroup
 ```
 
 ---
@@ -488,35 +670,44 @@ Phase 6
 
 ## Success Criteria
 
-- Workspace exists
-- Host pool exists
-- Application group exists
-- User assignment model validated
+```text
+Workspace Operational
+
+Host Pool Created
+
+Application Group Created
+
+Assignments Verified
+```
 
 ---
 
 # Phase 8 - Monitoring Platform
 
-## Objective
+# Objective
 
-Implement monitoring before deploying session hosts.
+Implement monitoring before session host deployment.
 
 ---
 
 ## Deliverables
 
-### Monitoring Infrastructure
+### Log Analytics Workspace
 
 ```text
-Log Analytics Workspace
+AK-AVD-<ENV>-LAW
+```
 
+---
+
+### Monitoring Components
+
+```text
 Data Collection Rules
-
-Data Collection Rule Associations
 
 Diagnostic Settings
 
-Workbooks
+Workbook
 
 Action Groups
 
@@ -525,9 +716,15 @@ Alerts
 
 ---
 
-### Monitoring Coverage
+### Terraform Module
 
-#### AVD
+```text
+modules/monitoring
+```
+
+---
+
+## AVD Monitoring
 
 ```text
 WVDConnections
@@ -541,7 +738,7 @@ WVDManagement
 
 ---
 
-#### Session Hosts
+## Session Host Monitoring
 
 ```text
 CPU
@@ -557,14 +754,6 @@ Windows Events
 
 ---
 
-### Terraform Module
-
-```text
-monitoring
-```
-
----
-
 ## Dependencies
 
 Phase 7
@@ -573,18 +762,23 @@ Phase 7
 
 ## Success Criteria
 
-- Logs reaching Log Analytics
-- Workbook deployed
-- Alerts functioning
-- Monitoring dashboard available
+```text
+Logs Available
+
+Workbook Operational
+
+Alerting Operational
+
+Monitoring Validated
+```
 
 ---
 
 # Phase 9 - Session Hosts
 
-## Objective
+# Objective
 
-Deploy session hosts using the Golden Image.
+Deploy session hosts from Golden Images.
 
 Marketplace images are prohibited.
 
@@ -597,7 +791,7 @@ Marketplace images are prohibited.
 ```text
 Virtual Machines
 
-Network Interfaces
+NICs
 
 Managed Disks
 
@@ -617,7 +811,7 @@ Azure Compute Gallery
 ### Terraform Module
 
 ```text
-session-hosts
+modules/session-hosts
 ```
 
 ---
@@ -630,42 +824,46 @@ Phase 8
 
 ## Success Criteria
 
-- Session hosts use Golden Image
-- Session hosts register successfully
-- Users can connect
+```text
+Session Hosts Deployed
+
+Host Pool Registration Successful
+
+User Connectivity Validated
+```
 
 ---
 
 # Phase 10 - FSLogix Storage
 
-## Objective
+# Objective
 
-Provide persistent user profile storage.
+Provide persistent profile storage.
 
 ---
 
 ## Storage Options
 
-### Option 1
+### Azure Files
 
 ```text
-Azure Files
+Preferred Initial Implementation
 ```
 
 ---
 
-### Option 2
+### Azure NetApp Files
 
 ```text
-Azure NetApp Files
+Future Enhancement
 ```
 
 ---
 
-## Terraform Module
+### Terraform Module
 
 ```text
-fslogix-storage
+modules/fslogix-storage
 ```
 
 ---
@@ -678,17 +876,21 @@ Phase 9
 
 ## Success Criteria
 
-- Profiles persist between sessions
-- Profile containers operational
-- Logons validated successfully
+```text
+Profile Persistence Working
+
+FSLogix Operational
+
+User Logons Validated
+```
 
 ---
 
 # Phase 11 - Enterprise Enhancements
 
-## Objective
+# Objective
 
-Implement advanced operational capabilities.
+Add enterprise capabilities after the core platform is stable.
 
 ---
 
@@ -729,11 +931,11 @@ Cost Management
 ## Reporting
 
 ```text
+Executive Dashboards
+
 Advanced Workbooks
 
 Operational Dashboards
-
-Executive Reporting
 ```
 
 ---
@@ -746,15 +948,19 @@ Phase 10
 
 ## Success Criteria
 
-- Production-ready platform
-- Governance implemented
-- Operational visibility established
+```text
+Production Ready Platform
+
+Governance Implemented
+
+Operational Standards Established
+```
 
 ---
 
 # 4. Environment Strategy
 
-The platform supports:
+Supported environments:
 
 ```text
 DEV
@@ -764,23 +970,33 @@ TEST
 PROD
 ```
 
-Each environment receives:
+A single deployment workflow supports all environments.
+
+Environment selection determines:
 
 ```text
-Dedicated State File
+Terraform Variables
 
-Dedicated Resource Group
+Terraform State
 
-Dedicated Monitoring
+Resource Naming
 
-Dedicated AVD Resources
+Deployment Scope
+```
+
+Authentication always uses:
+
+```text
+AK-SPN-AVD
+
+AK-GitHub-OIDC
 ```
 
 ---
 
 # 5. Development Methodology
 
-Every implementation follows:
+All implementations follow:
 
 ```text
 Design
@@ -796,31 +1012,40 @@ Validate
 Commit
 ```
 
-Infrastructure development shall never begin before documentation is completed.
+Documentation must be updated when architectural decisions change.
 
 ---
 
 # 6. Definition Of Done
 
-A phase is complete only when:
+A phase is considered complete only when:
 
-- Terraform applies successfully
-- Documentation is updated
-- Outputs are validated
-- Monitoring is verified (where applicable)
-- Commit comment is recorded
-- Code is pushed to repository
+```text
+Terraform Validate Successful
+
+Terraform Plan Successful
+
+Outputs Verified
+
+Documentation Updated
+
+Commit Comment Recorded
+
+Code Committed
+```
 
 ---
 
 # 7. Final Platform Outcome
 
-At completion, the platform will provide:
+The completed platform will provide:
 
 ```text
 OIDC Authentication
 
-Terraform Deployment
+GitHub Actions
+
+Terraform Automation
 
 Azure Compute Gallery
 
@@ -836,9 +1061,7 @@ Monitoring
 
 Alerts
 
-GitHub Actions
-
 Multi-Environment Support
 ```
 
-All infrastructure will be fully automated, fully documented, and deployable through GitHub Actions without manual intervention.
+This platform will be fully automated, fully documented, and deployable through GitHub Actions without manual infrastructure operations.

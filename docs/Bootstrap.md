@@ -334,8 +334,41 @@ AK-SPN-AVD
 
 ### Supported Account Types
 
+Select:
+
 ```text
 Accounts in this organizational directory only
+```
+
+### Microsoft Entra ID Portal Wording Reference
+
+| New Portal Wording | Previous Portal Wording |
+|----------|----------|
+| Single tenant - Default Directory | Accounts in this organizational directory only |
+| Multiple Entra ID tenants | Accounts in any organizational directory |
+| Any Entra ID Tenant + Personal Microsoft accounts | Accounts in any organizational directory and personal Microsoft accounts |
+| Personal accounts only | Personal Microsoft accounts only |
+
+### Selected Option
+
+```text
+Single tenant - Default Directory
+```
+
+Reason:
+
+```text
+The Azure Virtual Desktop platform is deployed into a single Microsoft Entra ID tenant and a single Azure subscription.
+
+A single deployment identity is used:
+
+AK-SPN-AVD
+
+A single federated credential is used:
+
+AK-GitHub-OIDC
+
+Multi-tenant support is not required.
 ```
 
 ### Redirect URI

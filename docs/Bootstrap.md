@@ -407,6 +407,12 @@ GitHub Actions Deploying Azure Resources
 AK-GitHub-OIDC
 ```
 
+### Description
+
+```text
+Allows GitHub Actions workflows in Azure_Virtual_Desktop repository to authenticate to Azure using OIDC without client secrets.
+```
+
 ---
 
 ### GitHub Organization

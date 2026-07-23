@@ -753,11 +753,11 @@ Terraform plan
 
 ---
 
-# 4.3 Required GitHub Repository Variables
+# 4.3 Required GitHub Repository Secrets
 
-The workflow should use GitHub repository variables for non-secret configuration.
+The workflow should use GitHub repository secrets for Azure authentication configuration.
 
-## Recommended Variables
+## Required Secrets
 
 ```text
 AZURE_CLIENT_ID
@@ -767,9 +767,7 @@ AZURE_TENANT_ID
 AZURE_SUBSCRIPTION_ID
 ```
 
-These values are not client secrets.
-
-They identify:
+These values identify:
 
 ```text
 App Registration Client ID
@@ -780,6 +778,38 @@ Subscription ID
 ```
 
 No client secret is required.
+
+Authentication is performed using:
+
+```text
+AK-GitHub-OIDC
+
+AK-SPN-AVD
+```
+
+through OIDC federation.
+
+---
+
+## GitHub Repository Path
+
+```text
+GitHub Repository
+→ Settings
+→ Secrets And Variables
+→ Actions
+→ Secrets
+```
+
+Create the following repository secrets:
+
+```text
+AZURE_CLIENT_ID
+
+AZURE_TENANT_ID
+
+AZURE_SUBSCRIPTION_ID
+```
 
 ---
 

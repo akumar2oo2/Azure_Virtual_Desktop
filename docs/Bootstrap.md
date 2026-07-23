@@ -905,6 +905,108 @@ AK-SPN-AVD
 AK-GitHub-OIDC
 ```
 
+## Example Workflow Execution
+
+When manually running the workflow:
+
+```text
+GitHub
+→ Actions
+→ Terraform Apply
+→ Run Workflow
+```
+
+GitHub will prompt for an environment selection.
+
+Example:
+
+```text
+Environment
+
+▼ dev
+  test
+  prod
+```
+
+If:
+
+```text
+dev
+```
+
+is selected, Terraform will use:
+
+```text
+environments/dev.tfvars
+
+dev.tfstate
+```
+
+If:
+
+```text
+test
+```
+
+is selected, Terraform will use:
+
+```text
+environments/test.tfvars
+
+test.tfstate
+```
+
+If:
+
+```text
+prod
+```
+
+is selected, Terraform will use:
+
+```text
+environments/prod.tfvars
+
+prod.tfstate
+```
+
+The selected environment determines:
+
+```text
+Terraform variable file
+
+Terraform state file
+
+Resource naming
+
+Deployment scope
+```
+
+Authentication remains unchanged and always uses:
+
+```text
+AK-SPN-AVD
+
+AK-GitHub-OIDC
+```
+
+for all environments.
+
+### Example GitHub Workflow Input
+
+```yaml
+workflow_dispatch:
+  inputs:
+    environment:
+      description: Environment to deploy
+      required: true
+      type: choice
+      options:
+        - dev
+        - test
+        - prod
+```
+
 ---
 
 # 4.7 Initial Terraform Validation Goal

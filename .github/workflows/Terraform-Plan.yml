@@ -1,0 +1,87 @@
+# Terraform Plan Workflow
+# Runs a Terraform plan against the selected environment without making any changes.
+
+name: Terraform Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+
+# Required for GitHub OIDC authentication and repository access.
+permissions:
+  id-token: write
+  contents: read
+
+# Prevent multiple plan jobs for the same environment from running at the same time.
+concurrency:
+  group: terraform-plan-${{ inputs.environment }}
+  cancel-in-progress: false
+
+# Terraform and Azure authentication settings used by all steps.
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_USE_OIDC: true
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+
+jobs:
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+      # Download repository contents to the GitHub runner.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Authenticate to Azure using GitHub OIDC.
+      # No client secrets are required.
+      - name: Azure login using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Install the required Terraform version.
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      # Initialize Terraform.
+      # Connect to the remote state backend.
+      # Select the correct state file based on the chosen environment.
+      - name: Terraform init
+        run: |
+          terraform init \
+            -backend-config="backend.hcl" \
+            -backend-config="key=${{ inputs.environment }}.tfstate"
+
+      # Validate Terraform configuration before planning.
+      - name: Terraform validate
+        run: terraform validate
+
+      # Generate an execution plan.
+      # Uses the environment-specific variables file.
+      # No resources are created or modified.
+      - name: Terraform plan
+        run: |
+          terraform plan \
+            -var-file="environments/${{ inputs.environment }}.tfvars" \
+            -out="tfplan-${{ inputs.environment }}.out"

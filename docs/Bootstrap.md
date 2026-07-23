@@ -853,11 +853,37 @@ Storage Account: akavdtfstate
 Container: tfstate
 ```
 
-## State File Pattern
+## Backend Configuration Strategy
+
+The platform uses a shared backend configuration file and dynamically selects the Terraform state file based on the chosen environment.
+
+### Backend Configuration File
+
+Create:
 
 ```text
-<environment>.tfstate
+backend.hcl
 ```
+
+Example:
+
+```hcl
+resource_group_name  = "AK-RG-TFSTATE"
+storage_account_name = "akavdtfstate"
+container_name       = "tfstate"
+
+use_oidc = true
+```
+
+The backend file contains values that remain constant across all environments.
+
+The state file key is intentionally excluded from this file.
+
+---
+
+## State File Strategy
+
+The Terraform state file is selected dynamically by the GitHub workflow.
 
 Examples:
 
@@ -867,6 +893,86 @@ dev.tfstate
 test.tfstate
 
 prod.tfstate
+```
+
+---
+
+## Workflow Backend Initialization
+
+The workflow uses the selected environment to determine the backend state file.
+
+Example:
+
+```bash
+terraform init \
+  -backend-config=backend.hcl \
+  -backend-config="key=${{ inputs.environment }}.tfstate"
+```
+
+---
+
+## Examples
+
+### DEV
+
+```bash
+terraform init \
+  -backend-config=backend.hcl \
+  -backend-config="key=dev.tfstate"
+```
+
+State File:
+
+```text
+tfstate/dev.tfstate
+```
+
+---
+
+### TEST
+
+```bash
+terraform init \
+  -backend-config=backend.hcl \
+  -backend-config="key=test.tfstate"
+```
+
+State File:
+
+```text
+tfstate/test.tfstate
+```
+
+---
+
+### PROD
+
+```bash
+terraform init \
+  -backend-config=backend.hcl \
+  -backend-config="key=prod.tfstate"
+```
+
+State File:
+
+```text
+tfstate/prod.tfstate
+```
+
+---
+
+## Benefits
+
+```text
+Single backend configuration file
+
+No duplicated backend configuration
+
+Environment-specific state files
+
+Simpler workflow maintenance
+
+Easy future expansion
 ```
 
 ---

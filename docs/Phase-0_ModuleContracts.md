@@ -2,59 +2,30 @@
 
 # 1. Purpose
 
-This document defines the standards, requirements, responsibilities, inputs, outputs, and dependencies for every Terraform module used within the Azure Virtual Desktop Enterprise Platform.
+This document defines the standards, responsibilities, inputs, outputs, and dependencies for all Terraform modules used within the Azure Virtual Desktop Enterprise Platform.
 
-The purpose of module contracts is to:
+The purpose of these contracts is to:
 
-- Ensure consistency across all modules
-- Prevent tightly-coupled module design
+- Standardize module design
 - Improve maintainability
 - Improve reusability
 - Reduce future refactoring
-- Standardize documentation
+- Define clear module boundaries
+- Establish repository-wide Terraform standards
 
-This document is considered the source of truth for all Terraform module development within this repository.
-
----
-
-# 2. Terraform Module Standards
-
-Every Terraform module shall contain the following files:
-
-```text
-module-name/
-
-├── README.md
-├── versions.tf
-├── main.tf
-├── variables.tf
-└── outputs.tf
-```
-
-Additional files may be introduced when required.
-
-Example:
-
-```text
-session-hosts/
-
-├── README.md
-├── versions.tf
-├── main.tf
-├── variables.tf
-├── outputs.tf
-└── extensions.tf
-```
+This document is considered the source of truth for Terraform module development.
 
 ---
 
-# 3. Module Development Rules
+# 2. Module Design Principles
 
-## Rule 1
+## Principle 1 - Self Contained Modules
 
 Modules must be self-contained.
 
-Modules must not depend on internal resources of another module.
+Modules are responsible only for the resources they create.
+
+Modules must not depend on internal resources from other modules.
 
 Allowed:
 
@@ -62,7 +33,7 @@ Allowed:
 variable "subnet_id"
 ```
 
-Not allowed:
+Not Allowed:
 
 ```hcl
 module.networking.subnet_id
@@ -72,7 +43,7 @@ inside module code.
 
 ---
 
-## Rule 2
+## Principle 2 - Variables And Outputs
 
 Modules communicate only through:
 
@@ -82,25 +53,11 @@ Variables
 Outputs
 ```
 
----
-
-## Rule 3
-
-All reusable resource identifiers must be exported.
-
-Examples:
-
-```hcl
-output "resource_group_id"
-
-output "host_pool_id"
-
-output "workspace_id"
-```
+No direct module references are permitted inside module implementations.
 
 ---
 
-## Rule 4
+## Principle 3 - No Hardcoded Values
 
 Hardcoded values are prohibited.
 
@@ -118,11 +75,11 @@ name = local.resource_group_name
 
 ---
 
-## Rule 5
+## Principle 4 - Tag Support
 
-All resources must support tagging.
+All modules must support tagging.
 
-Every module must accept:
+Each module must accept:
 
 ```hcl
 variable "tags"
@@ -130,7 +87,87 @@ variable "tags"
 
 ---
 
-## Rule 6
+## Principle 5 - Documentation Driven Development
+
+Module implementation must follow approved documentation.
+
+Phase documents are the authoritative documentation source.
+
+Examples:
+
+```text
+modules/image-gallery
+→ Phase-3_AzureComputeGallery.md
+
+modules/networking
+→ Phase-5_CoreInfrastructure.md
+
+modules/session-hosts
+→ Phase-9_SessionHosts.md
+```
+
+---
+
+# 3. Module Structure Standard
+
+Every module must follow the same structure.
+
+```text
+module-name/
+
+├── versions.tf
+├── main.tf
+├── variables.tf
+└── outputs.tf
+```
+
+---
+
+## versions.tf
+
+Purpose:
+
+```text
+Terraform Provider Requirements
+
+Terraform Version Requirements
+```
+
+---
+
+## main.tf
+
+Purpose:
+
+```text
+Resource Definitions
+```
+
+---
+
+## variables.tf
+
+Purpose:
+
+```text
+Module Inputs
+```
+
+---
+
+## outputs.tf
+
+Purpose:
+
+```text
+Module Outputs
+```
+
+---
+
+# 4. Terraform Standards
+
+## Variable Requirements
 
 Every variable must include:
 
@@ -151,9 +188,25 @@ variable "resource_group_name" {
 
 ---
 
-## Rule 7
+## Output Requirements
 
-Comments must be professional.
+Any reusable value must be exposed as an output.
+
+Examples:
+
+```hcl
+output "resource_group_id"
+
+output "host_pool_id"
+
+output "workspace_id"
+```
+
+---
+
+## Comment Standards
+
+All comments must be professional.
 
 Allowed:
 
@@ -161,17 +214,17 @@ Allowed:
 # Create Azure Virtual Desktop Host Pool
 ```
 
-Not allowed:
+Not Allowed:
 
 ```hcl
-# Magic stuff happens here
+# Magic happens here
 ```
 
 ---
 
-## Rule 8
+## Section Header Standards
 
-All Terraform files use section headers.
+Terraform files should use consistent section headers.
 
 Example:
 
@@ -181,7 +234,7 @@ Example:
 # =============================================================================
 
 # =============================================================================
-# RESOURCE GROUP
+# RESOURCES
 # =============================================================================
 
 # =============================================================================
@@ -191,7 +244,7 @@ Example:
 
 ---
 
-# 4. Global Module Inputs
+# 5. Global Module Inputs
 
 Most modules will consume:
 
@@ -207,29 +260,29 @@ resource_group_name
 tags
 ```
 
-These variables should remain consistent across the platform.
+These values should remain consistent across the platform.
 
 ---
 
-# 5. Root Module Responsibilities
+# 6. Root Module Responsibilities
 
 The root module is responsible for:
 
 ```text
-Module orchestration
+Module Orchestration
 
-Dependency handling
+Dependency Handling
 
-Environment configuration
+Environment Selection
 
-Variable assignment
+Variable Assignment
 ```
 
-Modules are responsible only for their specific workload.
+Modules are responsible only for their individual workloads.
 
 ---
 
-# 6. Module Contract - Resource Group
+# 7. Resource Group Module Contract
 
 ## Module
 
@@ -241,7 +294,7 @@ modules/resource-group
 
 ## Purpose
 
-Creates resource groups for platform resources.
+Creates Azure Resource Groups.
 
 ---
 
@@ -279,7 +332,7 @@ None
 
 ---
 
-# 7. Module Contract - Networking
+# 8. Networking Module Contract
 
 ## Module
 
@@ -291,7 +344,7 @@ modules/networking
 
 ## Purpose
 
-Deploys networking resources.
+Creates networking resources.
 
 ---
 
@@ -302,9 +355,9 @@ Virtual Network
 
 Subnets
 
-Network Security Group
+Network Security Groups
 
-Route Table (optional)
+Route Tables (Optional)
 ```
 
 ---
@@ -347,7 +400,7 @@ resource-group
 
 ---
 
-# 8. Module Contract - Identity
+# 9. Identity Module Contract
 
 ## Module
 
@@ -359,7 +412,7 @@ modules/identity
 
 ## Purpose
 
-Manages Azure AD groups and RBAC assignments.
+Creates identity resources and RBAC assignments.
 
 ---
 
@@ -405,7 +458,7 @@ resource-group
 
 ---
 
-# 9. Module Contract - Image Gallery
+# 10. Image Gallery Module Contract
 
 ## Module
 
@@ -417,7 +470,7 @@ modules/image-gallery
 
 ## Purpose
 
-Creates Azure Compute Gallery components.
+Creates Azure Compute Gallery resources.
 
 ---
 
@@ -469,7 +522,7 @@ resource-group
 
 ---
 
-# 10. Module Contract - Monitoring
+# 11. Monitoring Module Contract
 
 ## Module
 
@@ -481,7 +534,7 @@ modules/monitoring
 
 ## Purpose
 
-Provides monitoring infrastructure for Azure Virtual Desktop.
+Creates monitoring resources.
 
 ---
 
@@ -494,7 +547,7 @@ Data Collection Rules
 
 Diagnostic Settings
 
-Workbook
+Workbooks
 
 Action Groups
 
@@ -506,12 +559,6 @@ Alerts
 ## Inputs
 
 ```text
-host_pool_id
-
-workspace_id
-
-application_group_id
-
 resource_group_name
 
 location
@@ -539,13 +586,11 @@ action_group_id
 
 ```text
 resource-group
-
-networking
 ```
 
 ---
 
-# 11. Module Contract - AVD Workspace
+# 12. AVD Workspace Module Contract
 
 ## Module
 
@@ -557,7 +602,7 @@ modules/avd-workspace
 
 ## Purpose
 
-Creates Azure Virtual Desktop workspace.
+Creates Azure Virtual Desktop Workspace.
 
 ---
 
@@ -593,7 +638,7 @@ resource-group
 
 ---
 
-# 12. Module Contract - AVD Host Pool
+# 13. AVD Host Pool Module Contract
 
 ## Module
 
@@ -605,7 +650,7 @@ modules/avd-hostpool
 
 ## Purpose
 
-Creates Azure Virtual Desktop host pool.
+Creates Azure Virtual Desktop Host Pool.
 
 ---
 
@@ -647,7 +692,7 @@ resource-group
 
 ---
 
-# 13. Module Contract - AVD Application Group
+# 14. AVD Application Group Module Contract
 
 ## Module
 
@@ -659,7 +704,7 @@ modules/avd-appgroup
 
 ## Purpose
 
-Creates application groups.
+Creates Desktop and Remote Application Groups.
 
 ---
 
@@ -697,7 +742,7 @@ avd-hostpool
 
 ---
 
-# 14. Module Contract - Session Hosts
+# 15. Session Hosts Module Contract
 
 ## Module
 
@@ -709,23 +754,7 @@ modules/session-hosts
 
 ## Purpose
 
-Deploys Azure Virtual Desktop session hosts from Azure Compute Gallery images.
-
-Marketplace deployments are prohibited.
-
----
-
-## Resources
-
-```text
-Network Interfaces
-
-Virtual Machines
-
-Managed Disks
-
-Host Pool Registration
-```
+Deploys Azure Virtual Desktop Session Hosts using Azure Compute Gallery images.
 
 ---
 
@@ -773,7 +802,7 @@ avd-hostpool
 
 ---
 
-# 15. Module Contract - FSLogix Storage
+# 16. FSLogix Storage Module Contract
 
 ## Module
 
@@ -785,7 +814,7 @@ modules/fslogix-storage
 
 ## Purpose
 
-Provides profile storage for FSLogix containers.
+Provides FSLogix profile storage.
 
 ---
 
@@ -833,46 +862,6 @@ resource-group
 
 ---
 
-# 16. Documentation Requirements
-
-Every module README must contain:
-
-## Purpose
-
-Describe what the module creates.
-
----
-
-## Resources
-
-List all deployed resources.
-
----
-
-## Inputs
-
-Document every variable.
-
----
-
-## Outputs
-
-Document every output.
-
----
-
-## Dependencies
-
-List required modules.
-
----
-
-## Example Usage
-
-Provide working Terraform example.
-
----
-
 # 17. Module Lifecycle
 
 Every module follows:
@@ -893,16 +882,21 @@ Commit
 
 A module is not considered complete until:
 
-- Terraform Validate succeeds
-- Terraform Plan succeeds
-- Outputs are verified
-- README is completed
+```text
+Terraform Validate Successful
+
+Terraform Plan Successful
+
+Outputs Verified
+
+Documentation Updated
+```
 
 ---
 
 # 18. Future Module Expansion
 
-The following modules may be added later:
+Future modules may include:
 
 ```text
 scaling-plans
@@ -918,7 +912,7 @@ policy
 cost-management
 ```
 
-These future modules must follow the same standards defined in this document.
+Future modules must follow the same standards defined in this document.
 
 ---
 
@@ -926,13 +920,22 @@ These future modules must follow the same standards defined in this document.
 
 All platform modules must:
 
-- Be self-contained
-- Use variables for inputs
-- Use outputs for integration
-- Never contain hardcoded values
-- Always support tagging
-- Always include documentation
-- Follow repository naming standards
-- Support enterprise-scale deployment patterns
+```text
+Be Self-Contained
 
-This contract applies to all current and future modules within the Azure Virtual Desktop Enterprise Platform repository.
+Use Variables For Inputs
+
+Use Outputs For Integration
+
+Avoid Hardcoded Values
+
+Support Tagging
+
+Follow Repository Standards
+
+Follow Naming Standards
+
+Follow Phase-Based Documentation
+```
+
+These requirements apply to all current and future Terraform modules.

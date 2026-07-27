@@ -33,3 +33,28 @@ variable "location" {
   type        = string
   default     = "centralindia"
 }
+
+# -----------------------------------------------------------------------------
+# Phase 3 - Image Gallery variables
+# -----------------------------------------------------------------------------
+
+variable "image_publisher" {
+  description = "Publisher identifier stored in the image definition"
+  type        = string
+}
+
+variable "image_offer" {
+  description = "Offer identifier stored in the image definition"
+  type        = string
+}
+
+variable "image_sku" {
+  description = "SKU identifier stored in the image definition"
+  type        = string
+}
+
+variable "tags" {
+  description = "Common tags applied to every resource"
+  type        = map(string)
+  default     = {}
+}

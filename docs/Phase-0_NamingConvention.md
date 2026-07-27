@@ -78,8 +78,6 @@ The standard naming format is:
 Examples:
 
 ```text
-AK-AVD-DEV-RG
-
 AK-AVD-PROD-HP
 
 AK-AVD-TEST-LAW
@@ -127,32 +125,12 @@ tfstate
 AK-SPN-AVD
 ```
 
-Purpose:
-
-```text
-Terraform Deployments
-
-Image Factory
-
-Azure Virtual Desktop
-
-Monitoring
-
-Future Platform Components
-```
-
 ---
 
 ## Federated Credential
 
 ```text
 AK-GitHub-OIDC
-```
-
-Purpose:
-
-```text
-GitHub Actions Authentication
 ```
 
 This federated credential is shared across:
@@ -167,31 +145,64 @@ PROD
 
 environments.
 
-Environment selection is controlled through the workflow parameter and not through separate federated credentials.
-
 ---
 
-# 5. Azure Resource Naming Standards
+# 5. Resource Group Naming Standards
 
 ## Resource Group
 
 Pattern:
 
 ```text
-AK-AVD-<ENV>-RG
+AK-AVD-<ENV>-<WORKLOAD>-RG
 ```
 
 Examples:
 
 ```text
-AK-AVD-DEV-RG
+AK-AVD-DEV-NET-RG
+AK-AVD-DEV-IMG-RG
+AK-AVD-DEV-ID-RG
+AK-AVD-DEV-AVD-RG
+AK-AVD-DEV-MON-RG
+AK-AVD-DEV-FSL-RG
 
-AK-AVD-TEST-RG
+AK-AVD-TEST-NET-RG
+AK-AVD-TEST-IMG-RG
+AK-AVD-TEST-ID-RG
+AK-AVD-TEST-AVD-RG
+AK-AVD-TEST-MON-RG
+AK-AVD-TEST-FSL-RG
 
-AK-AVD-PROD-RG
+AK-AVD-PROD-NET-RG
+AK-AVD-PROD-IMG-RG
+AK-AVD-PROD-ID-RG
+AK-AVD-PROD-AVD-RG
+AK-AVD-PROD-MON-RG
+AK-AVD-PROD-FSL-RG
 ```
 
 ---
+
+## Workload Codes
+
+```text
+NET = Networking
+
+IMG = Image Infrastructure
+
+ID = Identity
+
+AVD = Azure Virtual Desktop
+
+MON = Monitoring
+
+FSL = FSLogix Storage
+```
+
+---
+
+# 6. Azure Resource Naming Standards
 
 ## Virtual Network
 
@@ -267,23 +278,25 @@ AK-AVD-PROD-RT
 
 ---
 
-# 6. Azure Compute Gallery Standards
+# 7. Azure Compute Gallery Standards
 
 ## Azure Compute Gallery
 
 Pattern:
 
 ```text
-AK-AVD-ACG
+AK-AVD-<ENV>-ACG
 ```
 
-Example:
+Examples:
 
 ```text
-AK-AVD-ACG
-```
+AK-AVD-DEV-ACG
 
-A single gallery supports all environments.
+AK-AVD-TEST-ACG
+
+AK-AVD-PROD-ACG
+```
 
 ---
 
@@ -379,7 +392,7 @@ Maintenance Releases
 
 ---
 
-# 7. Azure Virtual Desktop Naming Standards
+# 8. Azure Virtual Desktop Naming Standards
 
 ## Workspace
 
@@ -453,7 +466,7 @@ AK-AVD-PROD-RAG
 
 ---
 
-# 8. Session Host Naming Standards
+# 9. Session Host Naming Standards
 
 ## Session Host Virtual Machine
 
@@ -471,12 +484,6 @@ AK-AVD-DEV-SH01
 AK-AVD-DEV-SH02
 
 AK-AVD-PROD-SH01
-```
-
-Where:
-
-```text
-SH = Session Host
 ```
 
 ---
@@ -517,7 +524,7 @@ AK-AVD-PROD-DISK01
 
 ---
 
-# 9. Monitoring Naming Standards
+# 10. Monitoring Naming Standards
 
 ## Log Analytics Workspace
 
@@ -591,17 +598,11 @@ AK-AVD-PROD-AG
 
 ---
 
-# 10. Identity Naming Standards
+# 11. Identity Naming Standards
 
 ## App Registration
 
 Pattern:
-
-```text
-AK-SPN-AVD
-```
-
-Example:
 
 ```text
 AK-SPN-AVD
@@ -617,15 +618,7 @@ Pattern:
 AK-GitHub-OIDC
 ```
 
-Example:
-
-```text
-AK-GitHub-OIDC
-```
-
 Environment-specific OIDC credentials are prohibited.
-
-A single federated credential is used across all deployment environments.
 
 ---
 
@@ -651,11 +644,9 @@ AK-AVD-Helpdesk
 
 ---
 
-# 11. Terraform Standards
+# 12. Terraform Standards
 
 ## Local Values
-
-The root module must contain:
 
 ```hcl
 locals {
@@ -674,18 +665,18 @@ Hardcoded names are prohibited.
 Bad:
 
 ```hcl
-name = "AK-AVD-DEV-RG"
+name = "AK-AVD-DEV-NET-RG"
 ```
 
 Good:
 
 ```hcl
-name = "${local.prefix}-${local.workload}-${local.environment}-RG"
+name = "${local.prefix}-${local.workload}-${local.environment}-NET-RG"
 ```
 
 ---
 
-# 12. GitHub Standards
+# 13. GitHub Standards
 
 ## Repository Name
 
@@ -707,18 +698,6 @@ test
 prod
 ```
 
-Not allowed:
-
-```text
-development
-
-qa
-
-uat
-
-production
-```
-
 ---
 
 ## Workflow Files
@@ -737,17 +716,9 @@ Image Factory:
 build-image.yml
 ```
 
-Future Workflows:
-
-```text
-release-image.yml
-
-destroy-environment.yml
-```
-
 ---
 
-# 13. Terraform State Standards
+# 14. Terraform State Standards
 
 ## State File Naming
 
@@ -769,7 +740,7 @@ prod.tfstate
 
 ---
 
-# 14. Tagging Standards
+# 15. Tagging Standards
 
 All resources must include:
 
@@ -782,23 +753,9 @@ tags = {
 }
 ```
 
-Additional tags may be added as required by future governance requirements.
-
 ---
 
-# 15. Naming Convention Summary
-
-## Global Values
-
-```text
-Prefix      = AK
-
-Workload    = AVD
-
-Environments = DEV | TEST | PROD
-```
-
----
+# 16. Naming Convention Summary
 
 ## Bootstrap Resources
 
@@ -816,28 +773,49 @@ AK-GitHub-OIDC
 
 ---
 
-## Core Resource Examples
+## Environment Resource Groups
 
 ```text
-AK-AVD-DEV-RG
+AK-AVD-DEV-NET-RG
+AK-AVD-DEV-IMG-RG
+AK-AVD-DEV-ID-RG
+AK-AVD-DEV-AVD-RG
+AK-AVD-DEV-MON-RG
+AK-AVD-DEV-FSL-RG
 
-AK-AVD-DEV-VNET
+AK-AVD-TEST-NET-RG
+AK-AVD-TEST-IMG-RG
+AK-AVD-TEST-ID-RG
+AK-AVD-TEST-AVD-RG
+AK-AVD-TEST-MON-RG
+AK-AVD-TEST-FSL-RG
 
-AK-AVD-DEV-SNET-SESSIONHOSTS
+AK-AVD-PROD-NET-RG
+AK-AVD-PROD-IMG-RG
+AK-AVD-PROD-ID-RG
+AK-AVD-PROD-AVD-RG
+AK-AVD-PROD-MON-RG
+AK-AVD-PROD-FSL-RG
+```
 
-AK-AVD-DEV-NSG
+---
 
-AK-AVD-DEV-HP
+## Gallery Examples
 
-AK-AVD-DEV-WS
+```text
+AK-AVD-DEV-ACG
 
-AK-AVD-DEV-DAG
+AK-AVD-TEST-ACG
 
-AK-AVD-DEV-LAW
+AK-AVD-PROD-ACG
+```
 
-AK-AVD-DEV-WB
+---
 
-AK-AVD-DEV-SH01
+## Image Definition
+
+```text
+AK-WIN11-MS
 ```
 
 These standards shall be applied consistently across all platform resources, modules, workflows, and future enhancements.

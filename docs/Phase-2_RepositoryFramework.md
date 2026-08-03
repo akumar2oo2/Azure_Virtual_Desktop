@@ -69,13 +69,11 @@ Azure_Virtual_Desktop/
 │   ├── packer.pkr.hcl
 │   │
 │   └── ansible/
-│       ├── playbooks/
-│       │   └── build-image.yml
-│       │
+│       ├── playbook.yml
 │       └── roles/
-│           ├── azure-monitor-agent/
-│           ├── fslogix/
-│           └── security-baseline/
+│           ├── azure-monitor-agent.yml
+│           ├── fslogix.yml
+│           └── security-baseline.yml
 │
 ├── modules/
 │   ├── resource-group/
@@ -310,35 +308,35 @@ Image Build Automation
 ```text
 image-factory/
 └── ansible/
-    ├── playbooks/
-    │   └── build-image.yml
-    │
+    ├── playbook.yml
     └── roles/
-        ├── azure-monitor-agent/
-        ├── fslogix/
-        └── security-baseline/
+        ├── azure-monitor-agent.yml
+        ├── fslogix.yml
+        └── security-baseline.yml
 ```
 
 ---
 
 # 7. Ansible Role Architecture
 
-The platform uses a role-based Ansible design.
+The platform uses a task-based Ansible design.
 
-A single monolithic playbook is not permitted.
+A single orchestration playbook controls image creation.
 
-Each image component must exist as an independent Ansible role.
+Each image component is implemented as an independent task file located inside the roles directory.
+
+This approach keeps the Image Factory lightweight while maintaining separation of responsibilities.
 
 ---
 
 ## Roles
 
 ```text
-azure-monitor-agent
+azure-monitor-agent.yml
 
-fslogix
+fslogix.yml
 
-security-baseline
+security-baseline.yml
 ```
 
 Each role is responsible only for its workload.
@@ -370,18 +368,38 @@ Installs FSLogix.
 Purpose:
 
 ```text
-Applies basic image hardening and platform configuration.
+Applies operating system hardening and baseline security configuration for Azure Virtual Desktop session host images.
 ```
 
-Examples:
+Configuration Includes:
 
 ```text
-Disable unnecessary components
+Enable Microsoft Defender Antivirus
 
-Apply recommended settings
+Configure Microsoft recommended Defender exclusions for FSLogix
 
-Prepare image for enterprise-style deployment
+Enable Windows Firewall for Domain, Private, and Public profiles
+
+Disable SMBv1
+
+Enable Network Level Authentication (NLA) for Remote Desktop
+
+Disable TLS 1.0
+
+Disable TLS 1.1
+
+Enable TLS 1.2
+
+Apply Microsoft security baseline registry settings
+
+Configure Windows Event Log retention
 ```
+
+This role is responsible for implementing image-level security controls that should exist before the image is published to Azure Compute Gallery.
+
+The role does not implement enterprise services such as Microsoft Defender for Endpoint onboarding, Intune policies, Conditional Access policies, or Endpoint Manager configuration.
+
+These controls remain external to the image and are managed by platform operations after deployment.
 
 ---
 
@@ -406,7 +424,7 @@ Cleaner Image Builds
 Image creation is orchestrated through:
 
 ```text
-image-factory/ansible/playbooks/build-image.yml
+image-factory/ansible/playbook.yml
 ```
 
 This playbook acts as the orchestration layer.
@@ -414,20 +432,34 @@ This playbook acts as the orchestration layer.
 Example:
 
 ```yaml
-roles:
-  - azure-monitor-agent
-  - fslogix
-  - security-baseline
+---
+- name: Build Azure Virtual Desktop Golden Image
+  hosts: localhost
+
+  tasks:
+
+    - name: Install FSLogix
+      include_tasks: roles/fslogix.yml
+
+    - name: Apply Security Baseline
+      include_tasks: roles/security-baseline.yml
+
+    - name: Install Azure Monitor Agent
+      include_tasks: roles/azure-monitor-agent.yml
 ```
 
 Responsibilities:
 
 ```text
-Role Execution Order
+Task Execution Order
+
+Component-Based Image Configuration
 
 Image Build Orchestration
 
 Standardized Image Creation
+
+Azure Compute Gallery Publishing Preparation
 ```
 
 ---

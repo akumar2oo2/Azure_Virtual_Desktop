@@ -258,7 +258,7 @@ Purpose:
 ```text
 Image Hardening
 
-Basic Configuration Standards
+Operating System Security Configuration
 
 Enterprise Style Configuration
 ```
@@ -266,8 +266,36 @@ Enterprise Style Configuration
 Implemented through:
 
 ```text
-security-baseline role
+security-baseline.yml
 ```
+
+Configuration Includes:
+
+```text
+Enable Microsoft Defender Antivirus
+
+Configure Microsoft recommended Defender exclusions for FSLogix
+
+Enable Windows Firewall for Domain, Private, and Public profiles
+
+Disable SMBv1
+
+Enable Network Level Authentication (NLA)
+
+Disable TLS 1.0
+
+Disable TLS 1.1
+
+Enable TLS 1.2
+
+Apply Microsoft security baseline registry settings
+
+Configure Windows Event Log retention
+```
+
+The security baseline is limited to image-level operating system configuration.
+
+Enterprise controls such as Intune policies, Conditional Access, Microsoft Defender for Endpoint onboarding, and device compliance policies are intentionally excluded from the image and remain post-deployment management responsibilities.
 
 ---
 
@@ -549,16 +577,20 @@ Publish To Gallery
 
 # 10. Ansible Architecture
 
-The platform uses role-based Ansible automation.
+The platform uses task-based Ansible automation.
 
-A monolithic playbook is not permitted.
+A single orchestration playbook controls image creation.
+
+Each image component is implemented as an independent task file located within the roles directory.
+
+This approach keeps the Image Factory simple while maintaining separation of responsibilities.
 
 ---
 
 ## Playbook
 
 ```text
-image-factory/ansible/playbooks/build-image.yml
+image-factory/ansible/playbook.yml
 ```
 
 Purpose:
@@ -572,14 +604,14 @@ Image Build Orchestration
 ## Roles
 
 ```text
-azure-monitor-agent
+azure-monitor-agent.yml
 
-fslogix
+fslogix.yml
 
-security-baseline
+security-baseline.yml
 ```
 
-Each role is independently maintained and versioned.
+Each task file is independently maintained and is responsible for a specific image component.
 
 ---
 
@@ -590,10 +622,20 @@ The build playbook orchestrates role execution.
 Example:
 
 ```yaml
-roles:
-  - azure-monitor-agent
-  - fslogix
-  - security-baseline
+---
+- name: Build Azure Virtual Desktop Golden Image
+  hosts: localhost
+
+  tasks:
+
+    - name: Install FSLogix
+      include_tasks: roles/fslogix.yml
+
+    - name: Apply Security Baseline
+      include_tasks: roles/security-baseline.yml
+
+    - name: Install Azure Monitor Agent
+      include_tasks: roles/azure-monitor-agent.yml
 ```
 
 ---
@@ -601,11 +643,13 @@ roles:
 ## Responsibilities
 
 ```text
-Role Execution Order
+Task Execution Order
 
 Image Configuration
 
 Image Standardization
+
+Azure Compute Gallery Publishing Preparation
 ```
 
 ---
@@ -743,15 +787,19 @@ Verify:
 ```text
 packer.pkr.hcl Created
 
-build-image.yml Created
+playbook.yml Created
 
-build-image.yml Executes Successfully
+playbook.yml Executes Successfully
 
 Azure Monitor Agent Installed
 
 FSLogix Installed
 
 Security Baseline Applied
+
+Image Hardening Completed
+
+Golden Image Successfully Generalized
 
 Image Published To Azure Compute Gallery
 

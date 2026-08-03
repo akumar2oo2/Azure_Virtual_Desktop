@@ -12,21 +12,12 @@ packer {
   }
 }
 
-variable "subscription_id" {
-  type = string
-}
-
-variable "tenant_id" {
-  type = string
-}
-
 variable "environment" {
-  type    = string
-  default = "dev"
+  type = string
 
   validation {
     condition     = contains(["dev", "test", "prod"], lower(var.environment))
-    error_message = "Environment must be one of: dev, test, prod."
+    error_message = "Environment must be dev, test, or prod."
   }
 }
 
@@ -41,8 +32,7 @@ variable "vm_size" {
 }
 
 variable "image_version" {
-  type    = string
-  default = "1.0.0"
+  type = string
 }
 
 variable "winrm_username" {
@@ -60,63 +50,55 @@ variable "ama_package_url" {
   sensitive = true
 }
 
-variable "gallery_storage_account_type" {
-  type    = string
-  default = "Standard_LRS"
-}
-
 locals {
   prefix      = "AK"
   workload    = "AVD"
   environment = upper(var.environment)
 
-  image_resource_group_name = "${local.prefix}-${local.workload}-${local.environment}-IMG-RG"
-  gallery_name              = "${local.prefix}-${local.workload}-${local.environment}-ACG"
-  image_definition_name     = "AK-WIN11-MS"
+  gallery_resource_group_name = "${local.prefix}-${local.workload}-${local.environment}-IMG-RG"
 
-  build_vm_name  = "${local.prefix}-${local.workload}-${local.environment}-IMG-BUILD"
-  build_nic_name = "${local.prefix}-${local.workload}-${local.environment}-IMG-NIC"
+  gallery_name          = "${local.prefix}-${local.workload}-${local.environment}-ACG"
+  image_definition_name = "AK-WIN11-MS"
 
   common_tags = {
     Project     = "Azure Virtual Desktop"
-    Environment = lower(var.environment)
+    Environment = local.environment
     Owner       = "Ayush Kumar"
     ManagedBy   = "Packer"
   }
 }
 
 source "azure-arm" "avd_golden_image" {
+
   use_azure_cli_auth = true
 
-  subscription_id = var.subscription_id
-  tenant_id       = var.tenant_id
+  location = var.location
 
-  os_type         = "Windows"
+  os_type = "Windows"
+
   image_publisher = "MicrosoftWindowsDesktop"
   image_offer     = "office-365"
   image_sku       = "win11-24h2-avd-m365"
   image_version   = "latest"
 
-  location                  = var.location
-  vm_size                   = var.vm_size
-  build_resource_group_name = local.image_resource_group_name
+  vm_size = var.vm_size
 
-  communicator   = "winrm"
+  communicator = "winrm"
+
   winrm_use_ssl  = true
   winrm_insecure = true
   winrm_timeout  = "30m"
   winrm_username = var.winrm_username
 
-  temp_compute_name = local.build_vm_name
-  temp_nic_name     = local.build_nic_name
-
   shared_image_gallery_destination {
-    subscription         = var.subscription_id
-    resource_group       = local.image_resource_group_name
-    gallery_name         = local.gallery_name
-    image_name           = local.image_definition_name
-    image_version        = var.image_version
-    storage_account_type = var.gallery_storage_account_type
+
+    resource_group = local.gallery_resource_group_name
+    gallery_name   = local.gallery_name
+
+    image_name    = local.image_definition_name
+    image_version = var.image_version
+
+    storage_account_type = "Standard_LRS"
 
     target_region {
       name = var.location
@@ -129,10 +111,15 @@ source "azure-arm" "avd_golden_image" {
 }
 
 build {
-  name    = "avd-golden-image"
-  sources = ["source.azure-arm.avd_golden_image"]
+
+  name = "avd-golden-image"
+
+  sources = [
+    "source.azure-arm.avd_golden_image"
+  ]
 
   provisioner "ansible" {
+
     playbook_file = "./ansible/playbook.yml"
 
     extra_arguments = [
@@ -146,22 +133,23 @@ build {
   }
 
   provisioner "powershell" {
+
     inline = [
-      "Write-Host 'Waiting for Windows Azure Guest Agent service...'",
+
       "while ((Get-Service WindowsAzureGuestAgent -ErrorAction SilentlyContinue).Status -ne 'Running') { Start-Sleep -Seconds 10 }",
 
-      "Write-Host 'Waiting for RdAgent service...'",
       "while ((Get-Service RdAgent -ErrorAction SilentlyContinue).Status -ne 'Running') { Start-Sleep -Seconds 10 }",
 
-      "Write-Host 'Running Sysprep...'",
       "& $env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit",
 
-      "Write-Host 'Waiting for Sysprep generalization state...'",
       "while ($true) {",
-      "  $imageState = Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State' | Select-Object -ExpandProperty ImageState",
-      "  Write-Host \"Current image state: $imageState\"",
-      "  if ($imageState -eq 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { break }",
-      "  Start-Sleep -Seconds 10",
+
+      "$imageState = Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State' | Select-Object -ExpandProperty ImageState",
+
+      "if ($imageState -eq 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { break }",
+
+      "Start-Sleep -Seconds 10",
+
       "}"
     ]
   }

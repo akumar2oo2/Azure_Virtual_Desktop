@@ -1,0 +1,84 @@
+---
+- name: Download FSLogix package
+  ansible.windows.win_get_url:
+    url: "{{ fslogix_package_url }}"
+    dest: "{{ fslogix_zip_path }}"
+    force: true
+
+- name: Ensure FSLogix extraction directory exists
+  ansible.windows.win_file:
+    path: "{{ fslogix_extract_path }}"
+    state: directory
+
+- name: Extract FSLogix package
+  community.windows.win_unzip:
+    src: "{{ fslogix_zip_path }}"
+    dest: "{{ fslogix_extract_path }}"
+    delete_archive: false
+
+- name: Locate FSLogix installer
+  ansible.windows.win_shell: |
+    $installer = Get-ChildItem -Path "{{ fslogix_extract_path }}" -Recurse -Filter "FSLogixAppsSetup.exe" | Select-Object -First 1
+    if ($null -eq $installer) {
+      throw "FSLogixAppsSetup.exe was not found."
+    }
+    $installer.FullName
+  register: fslogix_installer_path
+  changed_when: false
+
+- name: Install FSLogix
+  ansible.windows.win_package:
+    path: "{{ fslogix_installer_path.stdout | trim }}"
+    arguments: /install /quiet /norestart
+    state: present
+    expected_return_code:
+      - 0
+      - 3010
+
+- name: Enable FSLogix profiles
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\FSLogix\Profiles
+    name: Enabled
+    data: 1
+    type: dword
+
+- name: Configure FSLogix profile type
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\FSLogix\Profiles
+    name: ProfileType
+    data: 0
+    type: dword
+
+- name: Configure FSLogix dynamic VHDX
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\FSLogix\Profiles
+    name: IsDynamic
+    data: 1
+    type: dword
+
+- name: Configure FSLogix VHDX format
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\FSLogix\Profiles
+    name: VolumeType
+    data: VHDX
+    type: string
+
+- name: Configure FSLogix delete local profile setting
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\FSLogix\Profiles
+    name: DeleteLocalProfileWhenVHDShouldApply
+    data: 1
+    type: dword
+
+- name: Validate FSLogix installation
+  ansible.windows.win_shell: |
+    $fslogix = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" |
+      Where-Object { $_.DisplayName -like "*FSLogix*" } |
+      Select-Object -First 1
+
+    if ($null -eq $fslogix) {
+      throw "FSLogix installation validation failed."
+    }
+
+    Write-Host $fslogix.DisplayName
+  changed_when: false

@@ -1,0 +1,119 @@
+name: Build AVD Golden Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+
+      image_version:
+        description: Azure Compute Gallery image version
+        required: true
+        default: 1.0.0
+        type: string
+
+      location:
+        description: Azure region
+        required: true
+        default: centralindia
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PACKAGE_RESOURCE_GROUP_NAME: AK-RG-PKGS
+  PACKAGE_STORAGE_ACCOUNT_NAME: akavdpackages
+  PACKAGE_CONTAINER_NAME: packages
+  FSLOGIX_PACKAGE_NAME: FSLogix_25.04.zip
+  AMA_PACKAGE_NAME: AzureMonitorAgent.msi
+  PACKER_WORKING_DIRECTORY: image-factory
+
+jobs:
+  build-image:
+    name: Build Golden Image
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@v3
+        with:
+          version: latest
+
+      - name: Install Ansible and WinRM dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible pywinrm requests-ntlm
+          ansible-galaxy collection install ansible.windows
+          ansible-galaxy collection install community.windows
+
+      - name: Generate package access URLs
+        shell: bash
+        run: |
+          EXPIRY=$(date -u -d "4 hours" '+%Y-%m-%dT%H:%MZ')
+
+          FSLOGIX_SAS=$(az storage blob generate-sas \
+            --account-name "$PACKAGE_STORAGE_ACCOUNT_NAME" \
+            --container-name "$PACKAGE_CONTAINER_NAME" \
+            --name "$FSLOGIX_PACKAGE_NAME" \
+            --permissions r \
+            --expiry "$EXPIRY" \
+            --auth-mode login \
+            --as-user \
+            --output tsv)
+
+          AMA_SAS=$(az storage blob generate-sas \
+            --account-name "$PACKAGE_STORAGE_ACCOUNT_NAME" \
+            --container-name "$PACKAGE_CONTAINER_NAME" \
+            --name "$AMA_PACKAGE_NAME" \
+            --permissions r \
+            --expiry "$EXPIRY" \
+            --auth-mode login \
+            --as-user \
+            --output tsv)
+
+          echo "PKR_VAR_fslogix_package_url=https://${PACKAGE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${PACKAGE_CONTAINER_NAME}/${FSLOGIX_PACKAGE_NAME}?${FSLOGIX_SAS}" >> "$GITHUB_ENV"
+          echo "PKR_VAR_ama_package_url=https://${PACKAGE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${PACKAGE_CONTAINER_NAME}/${AMA_PACKAGE_NAME}?${AMA_SAS}" >> "$GITHUB_ENV"
+
+      - name: Initialize Packer
+        working-directory: ${{ env.PACKER_WORKING_DIRECTORY }}
+        run: packer init packer.pkr.hcl
+
+      - name: Validate Packer configuration
+        working-directory: ${{ env.PACKER_WORKING_DIRECTORY }}
+        env:
+          PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          PKR_VAR_environment: ${{ inputs.environment }}
+          PKR_VAR_location: ${{ inputs.location }}
+          PKR_VAR_image_version: ${{ inputs.image_version }}
+        run: packer validate packer.pkr.hcl
+
+      - name: Build and publish golden image
+        working-directory: ${{ env.PACKER_WORKING_DIRECTORY }}
+        env:
+          PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          PKR_VAR_environment: ${{ inputs.environment }}
+          PKR_VAR_location: ${{ inputs.location }}
+          PKR_VAR_image_version: ${{ inputs.image_version }}
+        run: packer build packer.pkr.hcl

@@ -1,0 +1,226 @@
+---
+- name: Enable Microsoft Defender Antivirus real-time protection
+  ansible.windows.win_shell: |
+    Set-MpPreference -DisableRealtimeMonitoring $false
+  changed_when: true
+
+- name: Enable Microsoft Defender behavior monitoring
+  ansible.windows.win_shell: |
+    Set-MpPreference -DisableBehaviorMonitoring $false
+  changed_when: true
+
+- name: Enable Microsoft Defender IOAV protection
+  ansible.windows.win_shell: |
+    Set-MpPreference -DisableIOAVProtection $false
+  changed_when: true
+
+- name: Configure Defender FSLogix path exclusions
+  ansible.windows.win_shell: |
+    $paths = @(
+      "C:\Program Files\FSLogix",
+      "C:\ProgramData\FSLogix",
+      "C:\Users\*\AppData\Local\FSLogix"
+    )
+
+    foreach ($path in $paths) {
+      Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue
+    }
+  changed_when: true
+
+- name: Configure Defender FSLogix process exclusions
+  ansible.windows.win_shell: |
+    $processes = @(
+      "frxsvc.exe",
+      "frxccd.exe",
+      "frxdrvvt.exe",
+      "frxdrv.sys"
+    )
+
+    foreach ($process in $processes) {
+      Add-MpPreference -ExclusionProcess $process -ErrorAction SilentlyContinue
+    }
+  changed_when: true
+
+- name: Configure Defender FSLogix extension exclusions
+  ansible.windows.win_shell: |
+    $extensions = @(
+      ".vhd",
+      ".vhdx"
+    )
+
+    foreach ($extension in $extensions) {
+      Add-MpPreference -ExclusionExtension $extension -ErrorAction SilentlyContinue
+    }
+  changed_when: true
+
+- name: Enable Windows Firewall for all profiles
+  ansible.windows.win_shell: |
+    Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True
+  changed_when: true
+
+- name: Disable SMBv1 protocol
+  ansible.windows.win_shell: |
+    Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+    Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart
+  changed_when: true
+
+- name: Enable Network Level Authentication
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp
+    name: UserAuthentication
+    data: 1
+    type: dword
+
+- name: Disable TLS 1.0 client
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Client
+    name: Enabled
+    data: 0
+    type: dword
+
+- name: Disable TLS 1.0 server
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Server
+    name: Enabled
+    data: 0
+    type: dword
+
+- name: Disable TLS 1.1 client
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Client
+    name: Enabled
+    data: 0
+    type: dword
+
+- name: Disable TLS 1.1 server
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server
+    name: Enabled
+    data: 0
+    type: dword
+
+- name: Enable TLS 1.2 client
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client
+    name: Enabled
+    data: 1
+    type: dword
+
+- name: Enable TLS 1.2 server
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server
+    name: Enabled
+    data: 1
+    type: dword
+
+- name: Disable TLS 1.0 client by default
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Client
+    name: DisabledByDefault
+    data: 1
+    type: dword
+
+- name: Disable TLS 1.0 server by default
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Server
+    name: DisabledByDefault
+    data: 1
+    type: dword
+
+- name: Disable TLS 1.1 client by default
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Client
+    name: DisabledByDefault
+    data: 1
+    type: dword
+
+- name: Disable TLS 1.1 server by default
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server
+    name: DisabledByDefault
+    data: 1
+    type: dword
+
+- name: Enable TLS 1.2 client by default
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client
+    name: DisabledByDefault
+    data: 0
+    type: dword
+
+- name: Enable TLS 1.2 server by default
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server
+    name: DisabledByDefault
+    data: 0
+    type: dword
+
+- name: Disable anonymous SAM account enumeration
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: RestrictAnonymousSAM
+    data: 1
+    type: dword
+
+- name: Disable anonymous SID and name translation
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: TurnOffAnonymousBlock
+    data: 1
+    type: dword
+
+- name: Configure legal notice caption
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+    name: LegalNoticeCaption
+    data: Authorized Use Only
+    type: string
+
+- name: Configure legal notice text
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+    name: LegalNoticeText
+    data: This system is for authorized users only.
+    type: string
+
+- name: Disable cached domain logons
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: CachedLogonsCount
+    data: "0"
+    type: string
+
+- name: Configure Application event log retention
+  ansible.windows.win_shell: |
+    wevtutil sl Application /ms:67108864
+    wevtutil sl Application /rt:true
+  changed_when: true
+
+- name: Configure Security event log retention
+  ansible.windows.win_shell: |
+    wevtutil sl Security /ms:134217728
+    wevtutil sl Security /rt:true
+  changed_when: true
+
+- name: Configure System event log retention
+  ansible.windows.win_shell: |
+    wevtutil sl System /ms:67108864
+    wevtutil sl System /rt:true
+  changed_when: true
+
+- name: Validate security baseline settings
+  ansible.windows.win_shell: |
+    $firewall = Get-NetFirewallProfile | Where-Object { $_.Enabled -ne $true }
+
+    if ($firewall) {
+      throw "Firewall validation failed."
+    }
+
+    $smb = Get-SmbServerConfiguration | Select-Object -ExpandProperty EnableSMB1Protocol
+
+    if ($smb -ne $false) {
+      throw "SMBv1 validation failed."
+    }
+
+    Write-Host "Security baseline validation completed."
+  changed_when: false

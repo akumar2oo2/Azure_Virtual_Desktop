@@ -1,0 +1,26 @@
+---
+- name: Download Azure Monitor Agent package
+  ansible.windows.win_get_url:
+    url: "{{ ama_package_url }}"
+    dest: "{{ ama_msi_path }}"
+    force: true
+
+- name: Install Azure Monitor Agent
+  ansible.windows.win_package:
+    path: "{{ ama_msi_path }}"
+    arguments: /quiet /norestart
+    state: present
+    expected_return_code:
+      - 0
+      - 3010
+
+- name: Validate Azure Monitor Agent service
+  ansible.windows.win_shell: |
+    $service = Get-Service -Name AzureMonitorAgent -ErrorAction SilentlyContinue
+
+    if ($null -eq $service) {
+      throw "Azure Monitor Agent service was not found."
+    }
+
+    Write-Host $service.Status
+  changed_when: false

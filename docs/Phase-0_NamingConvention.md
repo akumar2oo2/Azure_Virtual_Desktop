@@ -93,7 +93,7 @@ Terraform does not manage bootstrap resources.
 
 ---
 
-## Resource Group
+## Terraform State Resource Group
 
 ```text
 AK-RG-TFSTATE
@@ -101,7 +101,7 @@ AK-RG-TFSTATE
 
 ---
 
-## Storage Account
+## Terraform State Storage Account
 
 ```text
 akavdtfstate
@@ -109,13 +109,125 @@ akavdtfstate
 
 Storage account names must remain lowercase.
 
+Purpose:
+
+```text
+Stores Terraform remote state files.
+```
+
 ---
 
-## Blob Container
+## Terraform State Container
 
 ```text
 tfstate
 ```
+
+Purpose:
+
+```text
+Stores environment-specific Terraform state files.
+```
+
+Examples:
+
+```text
+dev.tfstate
+
+test.tfstate
+
+prod.tfstate
+```
+
+---
+
+## Package Repository Resource Group
+
+```text
+AK-RG-PKGS
+```
+
+Purpose:
+
+```text
+Stores package repository resources used by the Image Factory.
+```
+
+---
+
+## Package Repository Storage Account
+
+```text
+akavdpackages
+```
+
+Storage account names must remain lowercase.
+
+Purpose:
+
+```text
+Centralized package repository for Image Factory builds.
+```
+
+For this lab environment, installation packages required by the Image Factory are stored in Azure Storage.
+
+Enterprise Note:
+
+```text
+In enterprise environments, a centralized package management platform such as JFrog Artifactory would typically be used for software distribution and version management.
+
+For this lab, Azure Storage provides a simpler solution while still maintaining the centralized package repository pattern used by enterprise image factories.
+```
+
+---
+
+## Package Repository Container
+
+```text
+packages
+```
+
+Purpose:
+
+```text
+Stores installation packages consumed during image builds.
+```
+
+Examples:
+
+```text
+AzureMonitorAgent.msi
+
+FSLogix.zip
+```
+
+---
+
+## App Registration
+
+```text
+AK-SPN-AVD
+```
+
+---
+
+## Federated Credential
+
+```text
+AK-GitHub-OIDC
+```
+
+This federated credential is shared across:
+
+```text
+DEV
+
+TEST
+
+PROD
+```
+
+environments.
 
 ---
 
@@ -765,6 +877,12 @@ AK-RG-TFSTATE
 akavdtfstate
 
 tfstate
+
+AK-RG-PKGS
+
+akavdpackages
+
+packages
 
 AK-SPN-AVD
 

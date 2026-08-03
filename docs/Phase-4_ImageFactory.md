@@ -273,7 +273,7 @@ security-baseline role
 
 # 8. Installation Source Strategy
 
-The Image Factory retrieves installation packages from JFrog Artifactory during the image build process.
+The Image Factory retrieves installation packages from a centralized Azure Storage package repository during the image build process.
 
 The repository does not store installation binaries.
 
@@ -286,32 +286,40 @@ Version Controlled Installers
 
 Simpler Lifecycle Management
 
-Enterprise Style Software Distribution
-
 Consistent Image Builds
+
+Reduced Repository Size
 ```
 
 ---
 
-## JFrog Artifactory
+## Package Repository Resources
 
-Purpose:
-
-```text
-Centralized Installation Package Repository
-```
-
-Responsibilities:
+### Resource Group
 
 ```text
-Store Azure Monitor Agent Installer
-
-Store FSLogix Installer
-
-Manage Software Versions
-
-Provide Consistent Installation Sources
+AK-RG-PKGS
 ```
+
+### Storage Account
+
+```text
+akavdpackages
+```
+
+### Container
+
+```text
+packages
+```
+
+---
+
+## Enterprise Note
+
+In enterprise environments, a centralized package management platform such as JFrog Artifactory would typically be used for software distribution and version management.
+
+For this lab, Azure Storage provides a simpler solution while still maintaining the centralized package repository pattern used by enterprise image factories.
 
 ---
 
@@ -320,7 +328,13 @@ Provide Consistent Installation Sources
 Installation Source:
 
 ```text
-JFrog Artifactory
+Azure Storage Package Repository
+
+AK-RG-PKGS
+
+akavdpackages
+
+packages
 ```
 
 Installation Method:
@@ -348,7 +362,13 @@ Data Collection Rule Support
 Installation Source:
 
 ```text
-JFrog Artifactory
+Azure Storage Package Repository
+
+AK-RG-PKGS
+
+akavdpackages
+
+packages
 ```
 
 Installation Method:
@@ -397,10 +417,22 @@ Enterprise Style Operating System Configuration
 
 ---
 
+## Expected Repository Contents
+
+Examples:
+
+```text
+AzureMonitorAgent.msi
+
+FSLogix.zip
+```
+
+---
+
 ## Component Delivery Flow
 
 ```text
-JFrog Artifactory
+Azure Storage Package Repository
 
       │
 
@@ -461,7 +493,17 @@ FSLogix Installers
 Third-Party Installation Binaries
 ```
 
-Installation packages are retrieved from JFrog Artifactory during the image build process.
+Installation packages are retrieved from:
+
+```text
+AK-RG-PKGS
+
+akavdpackages
+
+packages
+```
+
+during the image build process.
 
 ---
 
@@ -761,4 +803,3 @@ Subnets
 
 Network Security Groups
 ```
-``

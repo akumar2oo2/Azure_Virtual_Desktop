@@ -44,6 +44,12 @@ AK-RG-TFSTATE
 akavdtfstate
 
 tfstate
+
+AK-RG-PKGS
+
+akavdpackages
+
+packages
 ```
 
 ## Authentication Model
@@ -92,7 +98,7 @@ This approach is intentional because OIDC authentication and remote state do not
 
 # 3.2 Resources Created In Phase 1A
 
-## Resource Group
+## Terraform State Resource Group
 
 ```text
 AK-RG-TFSTATE
@@ -106,7 +112,7 @@ Stores Terraform backend resources.
 
 ---
 
-## Storage Account
+## Terraform State Storage Account
 
 ```text
 akavdtfstate
@@ -120,7 +126,7 @@ Provides remote Terraform state storage.
 
 ---
 
-## Blob Container
+## Terraform State Container
 
 ```text
 tfstate
@@ -140,6 +146,64 @@ dev.tfstate
 test.tfstate
 
 prod.tfstate
+```
+
+---
+
+## Package Repository Resource Group
+
+```text
+AK-RG-PKGS
+```
+
+Purpose:
+
+```text
+Stores package repository resources used by the Image Factory.
+```
+
+---
+
+## Package Repository Storage Account
+
+```text
+akavdpackages
+```
+
+Purpose:
+
+```text
+Provides a centralized package repository for Image Factory builds.
+```
+
+Enterprise Note:
+
+```text
+In enterprise environments, a centralized package management platform such as JFrog Artifactory would typically be used for software distribution and version management.
+
+For this lab, Azure Storage provides a simpler solution while still maintaining the centralized package repository pattern used by enterprise image factories.
+```
+
+---
+
+## Package Repository Container
+
+```text
+packages
+```
+
+Purpose:
+
+```text
+Stores installation packages consumed during image builds.
+```
+
+Examples:
+
+```text
+AzureMonitorAgent.msi
+
+FSLogix.zip
 ```
 
 ---
@@ -313,7 +377,110 @@ Private
 
 ---
 
-# 3.6 Step 4 - Create App Registration
+# 3.6 Step 4 - Create Package Repository Resource Group
+
+## Azure Portal Path
+
+```text
+Azure Portal
+→ Resource Groups
+→ Create
+```
+
+## Configuration
+
+### Resource Group Name
+
+```text
+AK-RG-PKGS
+```
+
+### Region
+
+Use the same region as the Terraform backend resources.
+
+---
+
+# 3.7 Step 5 - Create Package Repository Storage Account
+
+## Azure Portal Path
+
+```text
+Azure Portal
+→ Storage Accounts
+→ Create
+```
+
+## Configuration
+
+### Resource Group
+
+```text
+AK-RG-PKGS
+```
+
+### Storage Account Name
+
+```text
+akavdpackages
+```
+
+### Performance
+
+```text
+Standard
+```
+
+### Redundancy
+
+```text
+Locally Redundant Storage
+```
+
+### Account Kind
+
+```text
+StorageV2
+```
+
+### Public Network Access
+
+```text
+Enabled
+```
+
+---
+
+# 3.8 Step 6 - Create Package Repository Container
+
+## Azure Portal Path
+
+```text
+Azure Portal
+→ Storage Accounts
+→ akavdpackages
+→ Data Storage
+→ Containers
+→ Create
+```
+
+## Configuration
+
+### Container Name
+
+```text
+packages
+```
+
+### Public Access Level
+
+```text
+Private
+```
+
+---
+
+# 3.9 Step 7 - Create App Registration
 
 ## Azure Portal Path
 
@@ -379,7 +546,7 @@ Not Required
 
 ---
 
-# 3.7 Step 5 - Create Federated Credential
+# 3.10 Step 8 - Create Federated Credential
 
 ## Azure Portal Path
 
@@ -587,7 +754,7 @@ AK-SPN-AVD
 
 ---
 
-# 3.8 Step 6 - Assign Subscription RBAC
+# 3.11 Step 9 - Assign Subscription RBAC
 
 ## Azure Portal Path
 
@@ -617,7 +784,7 @@ Allows Terraform to create, update, and delete Azure resources in the subscripti
 
 ---
 
-# 3.9 Step 7 - Assign Terraform Backend RBAC
+# 3.12 Step 10 - Assign Terraform Backend RBAC
 
 ## Azure Portal Path
 
@@ -647,7 +814,7 @@ Allows Terraform to read, write, update, and lock state files inside the Terrafo
 
 ---
 
-# 3.10 Phase 1A Validation Checklist
+# 3.13 Phase 1A Validation Checklist
 
 Before moving to Phase 1B, verify the following.
 
@@ -659,6 +826,12 @@ AK-RG-TFSTATE exists
 akavdtfstate exists
 
 tfstate container exists
+
+AK-RG-PKGS exists
+
+akavdpackages exists
+
+packages container exists
 ```
 
 ## Identity Resources
@@ -687,12 +860,14 @@ main branch exists
 
 ---
 
-# 3.11 Phase 1A Exit Criteria
+# 3.14 Phase 1A Exit Criteria
 
 Phase 1A is complete when:
 
 ```text
 Terraform backend resources exist
+
+Package repository resources exist
 
 Azure deployment identity exists
 

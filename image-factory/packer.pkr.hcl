@@ -57,7 +57,7 @@ locals {
 
   gallery_resource_group_name = "${local.prefix}-${local.workload}-${local.environment}-IMG-RG"
 
-  gallery_name          = "${local.prefix}-${local.workload}-${local.environment}-ACG"
+  gallery_name          = "${local.prefix}_${local.workload}_${local.environment}_ACG"
   image_definition_name = "AK-WIN11-MS"
 
   common_tags = {

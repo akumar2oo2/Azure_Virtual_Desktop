@@ -120,12 +120,15 @@ build {
 
   provisioner "ansible" {
 
+    use_proxy = false
+    user = var.winrm_username
+
     playbook_file = "./ansible/playbook.yml"
 
     extra_arguments = [
 #      "-e", "ansible_connection=winrm",
 #      "-e", "ansible_winrm_transport=ntlm",
-#      "-e", "ansible_winrm_server_cert_validation=ignore",
+      "-e", "ansible_winrm_server_cert_validation=ignore",
 #      "-e", "ansible_shell_type=powershell",
       "-e", "fslogix_package_url=${var.fslogix_package_url}",
       "-e", "ama_package_url=${var.ama_package_url}"

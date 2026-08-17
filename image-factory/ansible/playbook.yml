@@ -7,7 +7,6 @@
     package_download_path: C:\Packages
     fslogix_zip_path: C:\Packages\FSLogix.zip
     fslogix_extract_path: C:\Packages\FSLogix
-    ama_msi_path: C:\Packages\AzureMonitorAgent.msi
 
   tasks:
     - name: Ensure package download directory exists
@@ -20,6 +19,3 @@
 
     - name: Apply Security Baseline
       ansible.builtin.include_tasks: roles/security-baseline.yml
-
-    - name: Install Azure Monitor Agent
-      ansible.builtin.include_tasks: roles/azure-monitor-agent.yml

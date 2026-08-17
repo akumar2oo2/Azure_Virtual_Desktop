@@ -37,7 +37,6 @@ env:
   PACKAGE_CONTAINER_NAME: packages
 
   FSLOGIX_PACKAGE_NAME: FSLogix.zip
-  AMA_PACKAGE_NAME: AzureMonitorAgent.msi
 
 jobs:
   build-image:
@@ -56,14 +55,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      
-      - name: Test Blob Access
-        run: |
-          az storage blob list \
-          --account-name akavdpackages \
-          --container-name packages \
-          --auth-mode login \
-          --output table
 
       - name: Install Packer
         uses: hashicorp/setup-packer@v3
@@ -75,15 +66,6 @@ jobs:
 
           ansible-galaxy collection install ansible.windows
           ansible-galaxy collection install community.windows
-
-      - name: Test Direct Blob Download
-        run: |
-          az storage blob download \
-          --account-name akavdpackages \
-          --container-name packages \
-          --name FSLogix.zip \
-          --file test.zip \
-          --auth-mode login
 
       - name: Generate Package URLs
         shell: bash
@@ -101,19 +83,7 @@ jobs:
             --as-user \
             --output tsv)
 
-          AMA_SAS=$(az storage blob generate-sas \
-            --account-name "$PACKAGE_STORAGE_ACCOUNT_NAME" \
-            --container-name "$PACKAGE_CONTAINER_NAME" \
-            --name "$AMA_PACKAGE_NAME" \
-            --permissions r \
-            --expiry "$EXPIRY" \
-            --auth-mode login \
-            --as-user \
-            --output tsv)
-
           echo "PKR_VAR_fslogix_package_url=https://${PACKAGE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${PACKAGE_CONTAINER_NAME}/${FSLOGIX_PACKAGE_NAME}?${FSLOGIX_SAS}" >> $GITHUB_ENV
-
-          echo "PKR_VAR_ama_package_url=https://${PACKAGE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${PACKAGE_CONTAINER_NAME}/${AMA_PACKAGE_NAME}?${AMA_SAS}" >> $GITHUB_ENV
 
       - name: Packer Init
         working-directory: ${{ env.PACKER_WORKING_DIRECTORY }}

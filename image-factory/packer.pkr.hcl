@@ -45,11 +45,6 @@ variable "fslogix_package_url" {
   sensitive = true
 }
 
-variable "ama_package_url" {
-  type      = string
-  sensitive = true
-}
-
 locals {
   prefix      = "AK"
   workload    = "AVD"
@@ -133,7 +128,6 @@ build {
       "-e", "ansible_winrm_operation_timeout_sec=60",
       "-e", "ansible_winrm_read_timeout_sec=90",
       "-e", "fslogix_package_url=${var.fslogix_package_url}",
-      "-e", "ama_package_url=${var.ama_package_url}"
     ]
   }
 

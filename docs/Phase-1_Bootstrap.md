@@ -814,7 +814,37 @@ Allows Terraform to read, write, update, and lock state files inside the Terrafo
 
 ---
 
-# 3.13 Phase 1A Validation Checklist
+# 3.13 Step 11 - Assign Package Repository RBAC
+
+## Azure Portal Path
+
+```text
+Azure Portal
+→ Storage Accounts
+→ akavdpackages
+→ Access Control (IAM)
+→ Add Role Assignment
+```
+
+## Role
+
+```text
+Storage Blob Data Reader
+```
+
+## Principal
+
+```text
+AK-SPN-AVD
+```
+
+## Purpose
+
+Allows Image Factory builds to read installation packages stored in the package repository container.
+
+---
+
+# 3.14 Phase 1A Validation Checklist
 
 Before moving to Phase 1B, verify the following.
 
@@ -848,6 +878,8 @@ AK-GitHub-OIDC exists
 AK-SPN-AVD has Contributor on the subscription
 
 AK-SPN-AVD has Storage Blob Data Contributor on akavdtfstate
+
+AK-SPN-AVD has Storage Blob Data Reader on akavdpackages
 ```
 
 ## Repository
@@ -860,7 +892,7 @@ main branch exists
 
 ---
 
-# 3.14 Phase 1A Exit Criteria
+# 3.15 Phase 1A Exit Criteria
 
 Phase 1A is complete when:
 
@@ -876,6 +908,8 @@ OIDC federated credential exists
 Required RBAC assignments exist
 
 GitHub repository is ready
+
+AK-SPN-AVD can access Terraform state storage and package repository storage
 ```
 
 No Terraform resources are deployed during Phase 1A.
@@ -1415,7 +1449,7 @@ OIDC
 
 Federated Credential
 
-GitHub Repository Variables
+GitHub Repository Secrets
 
 Azure RBAC
 ```
@@ -1474,7 +1508,25 @@ Backend Configuration
 
 ---
 
-## Issue 3 - Authorization Fails During Terraform Plan
+## Issue 3 - Package Download Fails During Image Build
+
+Check:
+
+```text
+Storage Account Name
+
+Container Name
+
+Package File Name
+
+Storage Blob Data Reader Assignment
+
+AK-SPN-AVD Access To akavdpackages
+```
+
+---
+
+## Issue 4 - Authorization Fails During Terraform Plan
 
 Check:
 
@@ -1508,6 +1560,8 @@ OIDC Authentication Validated
 
 ```text
 Remote Terraform State Ready
+
+Package Repository Ready
 
 GitHub OIDC Authentication Ready
 

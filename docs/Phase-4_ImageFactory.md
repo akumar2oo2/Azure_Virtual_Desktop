@@ -23,7 +23,7 @@ Packer Configuration
 
 Ansible Playbook
 
-Ansible Roles
+Ansible Task Files
 
 Image Build Workflow
 
@@ -60,13 +60,12 @@ image-factory/
 ├── packer.pkr.hcl
 │
 └── ansible/
-    ├── playbooks/
-    │   └── build-image.yml
+    ├── playbook.yml
     │
     └── roles/
-        ├── azure-monitor-agent/
-        ├── fslogix/
-        └── security-baseline/
+        ├── azure-monitor-agent.yml
+        ├── fslogix.yml
+        └── security-baseline.yml
 ```
 
 ---
@@ -228,7 +227,7 @@ Data Collection Rule Support
 Implemented through:
 
 ```text
-azure-monitor-agent role
+azure-monitor-agent.yml
 ```
 
 ---
@@ -246,7 +245,7 @@ Azure Virtual Desktop Profile Management
 Implemented through:
 
 ```text
-fslogix role
+fslogix.yml
 ```
 
 ---
@@ -343,6 +342,38 @@ packages
 
 ---
 
+## Required RBAC
+
+The Image Factory uses:
+
+```text
+AK-SPN-AVD
+```
+
+to authenticate to Azure during the image build process.
+
+The service principal requires the following role assignment on the package repository storage account:
+
+```text
+Storage Blob Data Reader
+```
+
+Scope:
+
+```text
+akavdpackages
+```
+
+Purpose:
+
+```text
+Allows Packer and Ansible to download installation packages from the package repository during image builds.
+```
+
+This role is required because the package repository stores installer files that are consumed during image creation.
+
+---
+
 ## Enterprise Note
 
 In enterprise environments, a centralized package management platform such as JFrog Artifactory would typically be used for software distribution and version management.
@@ -370,7 +401,7 @@ Installation Method:
 ```text
 Downloaded during image build
 
-Installed through the azure-monitor-agent Ansible role
+Installed through the azure-monitor-agent Ansible task file
 ```
 
 Purpose:
@@ -404,7 +435,7 @@ Installation Method:
 ```text
 Downloaded during image build
 
-Installed through the fslogix Ansible role
+Installed through the fslogix Ansible task file
 ```
 
 Purpose:
@@ -504,9 +535,9 @@ The repository stores:
 ```text
 Packer Configuration
 
-Ansible Playbooks
+Ansible Playbook
 
-Ansible Roles
+Ansible Task Files
 
 Configuration Logic
 ```
@@ -601,7 +632,7 @@ Image Build Orchestration
 
 ---
 
-## Roles
+## Task Files
 
 ```text
 azure-monitor-agent.yml
@@ -617,7 +648,7 @@ Each task file is independently maintained and is responsible for a specific ima
 
 # 11. Build Image Playbook
 
-The build playbook orchestrates role execution.
+The build playbook orchestrates task execution.
 
 Example:
 
@@ -817,7 +848,7 @@ Packer Configuration Created
 
 Ansible Playbook Created
 
-Ansible Roles Created
+Ansible Task Files Created
 
 Image Build Workflow Created
 

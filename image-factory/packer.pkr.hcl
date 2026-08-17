@@ -129,7 +129,9 @@ build {
 #      "-e", "ansible_connection=winrm",
       "-e", "ansible_winrm_transport=ntlm",
       "-e", "ansible_winrm_server_cert_validation=ignore",
-#      "-e", "ansible_shell_type=powershell",
+      "-e", "ansible_shell_type=cmd",
+      "-e", "ansible_winrm_operation_timeout_sec=60",
+      "-e", "ansible_winrm_read_timeout_sec=90",
       "-e", "fslogix_package_url=${var.fslogix_package_url}",
       "-e", "ama_package_url=${var.ama_package_url}"
     ]

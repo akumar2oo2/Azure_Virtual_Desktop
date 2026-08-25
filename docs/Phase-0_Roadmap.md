@@ -106,7 +106,7 @@ Implementation begins only after design and documentation are complete.
 
 # Phase 1A - Manual Bootstrap
 
-# Objective
+# Phase 1A Objective
 
 Create the foundational components required before Terraform can authenticate to Azure.
 
@@ -186,7 +186,7 @@ RBAC Verified
 
 # Phase 1B - OIDC Validation
 
-# Objective
+# Phase 1B Objective
 
 Validate GitHub authentication to Azure before infrastructure deployment begins.
 
@@ -256,7 +256,7 @@ Terraform Validate Successful
 
 # Phase 2 - Repository Framework
 
-# Objective
+# Phase 2 Objective
 
 Establish the repository structure and coding standards.
 
@@ -326,7 +326,7 @@ Standards Finalized
 
 # Phase 3 - Azure Compute Gallery Foundation
 
-# Objective
+# Phase 3 Objective
 
 Create image infrastructure before any virtual machine deployment.
 
@@ -378,7 +378,7 @@ Image Versioning Strategy Defined
 
 # Phase 4 - Image Factory
 
-# Objective
+# Phase 4 Objective
 
 Implement automated Golden Image creation.
 
@@ -423,15 +423,13 @@ Windows 11 Enterprise Multi-Session
 ### Components
 
 ```text
-Azure Monitor Agent
-
-AVD Agent
-
-AVD Bootloader
+Image Factory
 
 FSLogix
 
-Microsoft 365 Apps
+Security Baseline
+
+Azure Compute Gallery
 ```
 
 ---
@@ -502,7 +500,7 @@ No Manual Image Creation
 
 # Phase 5 - Core Infrastructure Foundation
 
-# Objective
+# Phase 5 Objective
 
 Deploy foundational Azure resources.
 
@@ -558,7 +556,7 @@ Platform Ready For AVD
 
 # Phase 6 - Identity & Access Control
 
-# Objective
+# Phase 6 Objective
 
 Implement group-based access management.
 
@@ -614,7 +612,7 @@ No Hardcoded Object IDs
 
 # Phase 7 - Azure Virtual Desktop Core
 
-# Objective
+# Phase 7 Objective
 
 Deploy AVD control-plane resources.
 
@@ -684,7 +682,7 @@ Assignments Verified
 
 # Phase 8 - Monitoring Platform
 
-# Objective
+# Phase 8 Objective
 
 Implement monitoring before session host deployment.
 
@@ -776,7 +774,7 @@ Monitoring Validated
 
 # Phase 9 - Session Hosts
 
-# Objective
+# Phase 9 Objective
 
 Deploy session hosts from Golden Images.
 
@@ -836,7 +834,7 @@ User Connectivity Validated
 
 # Phase 10 - FSLogix Storage
 
-# Objective
+# Phase 10 Objective
 
 Provide persistent profile storage.
 
@@ -888,7 +886,7 @@ User Logons Validated
 
 # Phase 11 - Enterprise Enhancements
 
-# Objective
+# Phase 11 Objective
 
 Add enterprise capabilities after the core platform is stable.
 

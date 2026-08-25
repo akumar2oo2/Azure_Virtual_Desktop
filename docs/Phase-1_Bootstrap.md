@@ -201,8 +201,6 @@ Stores installation packages consumed during image builds.
 Examples:
 
 ```text
-AzureMonitorAgent.msi
-
 FSLogix.zip
 ```
 

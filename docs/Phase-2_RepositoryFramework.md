@@ -71,7 +71,6 @@ Azure_Virtual_Desktop/
 │   └── ansible/
 │       ├── playbook.yml
 │       └── roles/
-│           ├── azure-monitor-agent.yml
 │           ├── fslogix.yml
 │           └── security-baseline.yml
 │
@@ -310,7 +309,6 @@ image-factory/
 └── ansible/
     ├── playbook.yml
     └── roles/
-        ├── azure-monitor-agent.yml
         ├── fslogix.yml
         └── security-baseline.yml
 ```
@@ -332,8 +330,6 @@ This approach keeps the Image Factory lightweight while maintaining separation o
 ## Roles
 
 ```text
-azure-monitor-agent.yml
-
 fslogix.yml
 
 security-baseline.yml
@@ -345,10 +341,14 @@ Each role is responsible only for its workload.
 
 ### azure-monitor-agent
 
-Purpose:
+Azure Monitor Agent is not included in the Golden Image.
+
+Microsoft recommends deploying Azure Monitor Agent to Azure Virtual Machines through the Azure Monitor Agent VM Extension.
+
+Publisher:
 
 ```text
-Installs and configures Azure Monitor Agent.
+Microsoft.Azure.Monitor
 ```
 
 ---
@@ -443,9 +443,6 @@ Example:
 
     - name: Apply Security Baseline
       include_tasks: roles/security-baseline.yml
-
-    - name: Install Azure Monitor Agent
-      include_tasks: roles/azure-monitor-agent.yml
 ```
 
 Responsibilities:

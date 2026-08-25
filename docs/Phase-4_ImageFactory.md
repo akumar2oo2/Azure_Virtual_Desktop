@@ -212,26 +212,6 @@ The Golden Image includes only essential platform components.
 
 ---
 
-## Azure Monitor Agent
-
-Purpose:
-
-```text
-Monitoring Integration
-
-Log Analytics Integration
-
-Data Collection Rule Support
-```
-
-Implemented through:
-
-```text
-azure-monitor-agent.yml
-```
-
----
-
 ## FSLogix
 
 Purpose:
@@ -384,34 +364,14 @@ For this lab, Azure Storage provides a simpler solution while still maintaining 
 
 ## Azure Monitor Agent
 
-Installation Source:
+Azure Monitor Agent is not included in the Golden Image.
+
+Microsoft recommends deploying Azure Monitor Agent to Azure Virtual Machines through the Azure Monitor Agent VM Extension.
+
+Publisher:
 
 ```text
-Azure Storage Package Repository
-
-AK-RG-PKGS
-
-akavdpackages
-
-packages
-```
-
-Installation Method:
-
-```text
-Downloaded during image build
-
-Installed through the azure-monitor-agent Ansible task file
-```
-
-Purpose:
-
-```text
-Monitoring Integration
-
-Log Analytics Integration
-
-Data Collection Rule Support
+Microsoft.Azure.Monitor
 ```
 
 ---
@@ -481,8 +441,6 @@ Enterprise Style Operating System Configuration
 Examples:
 
 ```text
-AzureMonitorAgent.msi
-
 FSLogix.zip
 ```
 
@@ -506,8 +464,6 @@ Packer Build VM
 Ansible Playbook
 
       │
-
-      ├── Download Azure Monitor Agent
 
       ├── Download FSLogix
 
@@ -821,8 +777,6 @@ packer.pkr.hcl Created
 playbook.yml Created
 
 playbook.yml Executes Successfully
-
-Azure Monitor Agent Installed
 
 FSLogix Installed
 

@@ -35,3 +35,48 @@ locals {
     Phase       = "Phase-3-Image-Gallery"
   })
 }
+
+# =============================================================================
+# LOCAL VALUES - Phase 5
+# =============================================================================
+# Naming is centralized in the root module so networking resources
+# follow platform naming standards while modules remain generic.
+
+locals{
+  # Networking resource group name.
+  network_resource_group_name = format(
+    "%s-%s-%s-NET-RG",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  # Virtual Network name.
+  virtual_network_name = format(
+    "%s-%s-%s-VNET",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  # Subnet names.
+  subnet_names = {
+    sessionhosts = format("%s-%s-%s-SNET-SESSIONHOSTS", var.project_prefix, var.project_name, local.env_upper)
+    build        = format("%s-%s-%s-SNET-BUILD", var.project_prefix, var.project_name, local.env_upper)
+    management   = format("%s-%s-%s-SNET-MANAGEMENT", var.project_prefix, var.project_name, local.env_upper)
+  }
+
+  # Network Security Group names.
+  network_security_group_names = {
+    sessionhosts = format("%s-%s-%s-SH-NSG", var.project_prefix, var.project_name, local.env_upper)
+    build        = format("%s-%s-%s-BUILD-NSG", var.project_prefix, var.project_name, local.env_upper)
+    management   = format("%s-%s-%s-MGMT-NSG", var.project_prefix, var.project_name, local.env_upper)
+  }
+
+  # Phase 5 networking tags.
+  networking_tags = merge(var.tags, {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+    Phase       = "Phase-5-Core-Infrastructure"
+  })
+}

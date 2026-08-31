@@ -47,3 +47,43 @@ output "image_definition_name" {
   description = "Image definition name"
   value       = module.image_gallery.image_definition_name
 }
+
+# -----------------------------------------------------------------------------
+# Phase 5 - Core Infrastructure outputs
+# Consumed by future platform phases and used for deployment validation.
+# -----------------------------------------------------------------------------
+
+output "network_resource_group_id" {
+  description = "Networking resource group ID"
+  value       = module.network_resource_group.resource_group_id
+}
+
+output "network_resource_group_name" {
+  description = "Networking resource group name"
+  value       = module.network_resource_group.resource_group_name
+}
+
+output "network_resource_group_location" {
+  description = "Networking resource group location"
+  value       = module.network_resource_group.resource_group_location
+}
+
+output "vnet_id" {
+  description = "Virtual Network ID"
+  value       = module.networking.vnet_id
+}
+
+output "vnet_name" {
+  description = "Virtual Network name"
+  value       = module.networking.vnet_name
+}
+
+output "subnet_ids" {
+  description = "Map of subnet IDs"
+  value       = module.networking.subnet_ids
+}
+
+output "network_security_group_ids" {
+  description = "Map of Network Security Group IDs"
+  value       = module.networking.network_security_group_ids
+}

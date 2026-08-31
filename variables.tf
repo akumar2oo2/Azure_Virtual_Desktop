@@ -58,3 +58,20 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# -----------------------------------------------------------------------------
+# Phase 5 - Core Infrastructure variables
+# -----------------------------------------------------------------------------
+
+variable "vnet_address_space" {
+  description = "Address space assigned to the Virtual Network"
+  type        = list(string)
+}
+
+variable "subnet_definitions" {
+  description = "Subnet configuration definitions"
+  type = map(object({
+    name             = string
+    address_prefixes = list(string)
+  }))
+}

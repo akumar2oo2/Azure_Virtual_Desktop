@@ -38,3 +38,66 @@ module "image_gallery" {
 
   tags = local.common_tags
 }
+
+# =============================================================================
+# RESOURCE GROUP - NETWORKING
+# =============================================================================
+# Creates the resource group that holds the networking resources.
+
+module "network_resource_group" {
+  source = "./modules/resource-group"
+
+  resource_group_name = local.network_resource_group_name
+  location            = var.location
+  tags                = local.networking_tags
+}
+
+# =============================================================================
+# NETWORKING
+# =============================================================================
+# Creates the Virtual Network, subnets, Network Security Groups,
+# and subnet associations.
+
+module "networking" {
+  source = "./modules/networking"
+
+  resource_group_name = module.network_resource_group.resource_group_name
+  location            = var.location
+
+  virtual_network_name = local.virtual_network_name
+
+  vnet_address_space = var.vnet_address_space
+
+  subnet_definitions = {
+    sessionhosts = {
+      name             = local.subnet_names.sessionhosts
+      address_prefixes = var.subnet_definitions.sessionhosts.address_prefixes
+    }
+
+    build = {
+      name             = local.subnet_names.build
+      address_prefixes = var.subnet_definitions.build.address_prefixes
+    }
+
+    management = {
+      name             = local.subnet_names.management
+      address_prefixes = var.subnet_definitions.management.address_prefixes
+    }
+  }
+
+  network_security_groups = {
+    sessionhosts = {
+      name = local.network_security_group_names.sessionhosts
+    }
+
+    build = {
+      name = local.network_security_group_names.build
+    }
+
+    management = {
+      name = local.network_security_group_names.management
+    }
+  }
+
+  tags = local.networking_tags
+}

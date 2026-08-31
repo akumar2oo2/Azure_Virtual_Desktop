@@ -5,7 +5,7 @@
 # This file contains environment-specific values that Terraform
 # uses during planning and deployment.
 
-environment = "prod"
+environment = "test"
 
 # Standard resource naming prefix.
 project_prefix = "AK"
@@ -25,4 +25,26 @@ image_sku       = "win11-23h2-avd"
 tags = {
   AKProject = "AVD"
   Workload  = "ImageGallery"
+}
+
+# -----------------------------------------------------------------------------
+# Phase 5 - Core Infrastructure configuration
+# -----------------------------------------------------------------------------
+
+vnet_address_space = [
+  "10.20.0.0/16"
+]
+
+subnet_definitions = {
+  sessionhosts = {
+    address_prefixes = ["10.20.1.0/24"]
+  }
+
+  build = {
+    address_prefixes = ["10.20.2.0/24"]
+  }
+
+  management = {
+    address_prefixes = ["10.20.3.0/24"]
+  }
 }

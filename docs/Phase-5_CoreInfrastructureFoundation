@@ -1,0 +1,902 @@
+# Phase 5 - Core Infrastructure Foundation
+
+# 1. Purpose
+
+Phase 5 introduces the foundational Azure networking infrastructure required by all future Azure Virtual Desktop platform components.
+
+The purpose of this phase is to establish a secure, repeatable, and environment-specific network foundation that will be consumed by future platform services.
+
+Phase 5 creates the networking layer required by:
+
+```text
+Identity
+
+Azure Virtual Desktop
+
+Monitoring
+
+Session Hosts
+
+FSLogix Storage
+```
+
+No workloads are deployed during this phase.
+
+Phase 5 establishes only the infrastructure foundation upon which future phases depend.
+
+---
+
+# 2. Scope
+
+The following items are implemented during Phase 5:
+
+```text
+Resource Groups
+
+Virtual Networks
+
+Subnets
+
+Network Security Groups
+
+Network Security Group Associations
+
+Terraform Resource Group Module
+
+Terraform Networking Module
+```
+
+The following items are not implemented during Phase 5:
+
+```text
+Azure AD Groups
+
+RBAC Assignments
+
+Log Analytics Workspaces
+
+Azure Monitor Agent
+
+Data Collection Rules
+
+Azure Virtual Desktop Resources
+
+Session Hosts
+
+FSLogix Storage
+
+Route Tables
+
+Azure Firewall
+
+VPN Gateway
+
+ExpressRoute
+```
+
+These components are delivered in later phases.
+
+---
+
+# 3. Repository Structure
+
+Phase 5 introduces the first networking modules.
+
+```text
+Azure_Virtual_Desktop/
+│
+├── modules/
+│   ├── resource-group/
+│   │   ├── versions.tf
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   │
+│   └── networking/
+│       ├── versions.tf
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+│
+├── environments/
+│   ├── dev.tfvars
+│   ├── test.tfvars
+│   └── prod.tfvars
+│
+├── locals.tf
+├── variables.tf
+├── outputs.tf
+└── main.tf
+```
+
+---
+
+# 4. Core Infrastructure Architecture
+
+The platform uses environment-isolated networking.
+
+Each environment receives its own:
+
+```text
+Resource Group
+
+Virtual Network
+
+Subnets
+
+Network Security Groups
+```
+
+This provides:
+
+```text
+Environment Isolation
+
+Independent Growth
+
+Simplified Troubleshooting
+
+Cleaner Security Boundaries
+
+Future Expansion Support
+```
+
+---
+
+## Architecture Flow
+
+```text
+Resource Group
+
+      │
+
+      ▼
+
+Virtual Network
+
+      │
+
+      ▼
+
+Subnets
+
+      │
+
+      ▼
+
+Network Security Groups
+
+      │
+
+      ▼
+
+Future Platform Components
+```
+
+---
+
+# 5. Resource Group Strategy
+
+Each environment receives its own networking resource group.
+
+---
+
+## DEV
+
+```text
+AK-AVD-DEV-NET-RG
+```
+
+---
+
+## TEST
+
+```text
+AK-AVD-TEST-NET-RG
+```
+
+---
+
+## PROD
+
+```text
+AK-AVD-PROD-NET-RG
+```
+
+---
+
+## Purpose
+
+The networking resource group stores:
+
+```text
+Virtual Networks
+
+Subnets
+
+Network Security Groups
+
+Future Route Tables
+
+Future Networking Components
+```
+
+---
+
+# 6. Virtual Network Strategy
+
+Each environment receives a dedicated virtual network.
+
+---
+
+## DEV
+
+```text
+AK-AVD-DEV-VNET
+```
+
+---
+
+## TEST
+
+```text
+AK-AVD-TEST-VNET
+```
+
+---
+
+## PROD
+
+```text
+AK-AVD-PROD-VNET
+```
+
+---
+
+## Design Principles
+
+```text
+One VNET Per Environment
+
+No Shared VNETs
+
+No Cross-Environment Dependencies
+
+Environment Isolation First
+```
+
+---
+
+# 7. CIDR Strategy
+
+Network address spaces are environment-specific.
+
+CIDR values must never be hardcoded within Terraform modules.
+
+This aligns with:
+
+```text
+Module Contracts
+
+Principle 3 - No Hardcoded Values
+```
+
+---
+
+## Environment Configuration
+
+CIDR values are provided through:
+
+```text
+environments/dev.tfvars
+
+environments/test.tfvars
+
+environments/prod.tfvars
+```
+
+---
+
+## Required Variables
+
+### Virtual Network Address Space
+
+Example:
+
+```hcl
+vnet_address_space = [
+  "10.10.0.0/16"
+]
+```
+
+---
+
+### Subnet Definitions
+
+Example:
+
+```hcl
+subnet_definitions = {
+  sessionhosts = "10.10.1.0/24"
+  build        = "10.10.2.0/24"
+  management   = "10.10.3.0/24"
+}
+```
+
+---
+
+## Design Principles
+
+```text
+No Hardcoded CIDRs
+
+Environment-Specific Configuration
+
+Reusable Networking Module
+
+Future Expansion Support
+```
+
+---
+
+# 8. Subnet Strategy
+
+Each environment receives three dedicated subnets.
+
+---
+
+## Session Hosts Subnet
+
+Pattern:
+
+```text
+AK-AVD-<ENV>-SNET-SESSIONHOSTS
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-SNET-SESSIONHOSTS
+
+AK-AVD-TEST-SNET-SESSIONHOSTS
+
+AK-AVD-PROD-SNET-SESSIONHOSTS
+```
+
+Purpose:
+
+```text
+Future Azure Virtual Desktop Session Hosts
+```
+
+---
+
+## Build Subnet
+
+Pattern:
+
+```text
+AK-AVD-<ENV>-SNET-BUILD
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-SNET-BUILD
+
+AK-AVD-TEST-SNET-BUILD
+
+AK-AVD-PROD-SNET-BUILD
+```
+
+Purpose:
+
+```text
+Future Packer Build Virtual Machines
+```
+
+---
+
+## Management Subnet
+
+Pattern:
+
+```text
+AK-AVD-<ENV>-SNET-MANAGEMENT
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-SNET-MANAGEMENT
+
+AK-AVD-TEST-SNET-MANAGEMENT
+
+AK-AVD-PROD-SNET-MANAGEMENT
+```
+
+Purpose:
+
+```text
+Future Administrative Resources
+
+Automation Components
+
+Management Services
+
+Jump Hosts
+```
+
+---
+
+# 9. Network Security Group Strategy
+
+The platform uses one Network Security Group per subnet.
+
+This approach provides:
+
+```text
+Improved Security Isolation
+
+Simplified Rule Management
+
+Independent Security Policies
+
+Enterprise Networking Alignment
+```
+
+---
+
+## Session Host NSG
+
+Pattern:
+
+```text
+AK-AVD-<ENV>-SH-NSG
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-SH-NSG
+
+AK-AVD-TEST-SH-NSG
+
+AK-AVD-PROD-SH-NSG
+```
+
+Associated Subnet:
+
+```text
+AK-AVD-<ENV>-SNET-SESSIONHOSTS
+```
+
+---
+
+## Build NSG
+
+Pattern:
+
+```text
+AK-AVD-<ENV>-BUILD-NSG
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-BUILD-NSG
+
+AK-AVD-TEST-BUILD-NSG
+
+AK-AVD-PROD-BUILD-NSG
+```
+
+Associated Subnet:
+
+```text
+AK-AVD-<ENV>-SNET-BUILD
+```
+
+---
+
+## Management NSG
+
+Pattern:
+
+```text
+AK-AVD-<ENV>-MGMT-NSG
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-MGMT-NSG
+
+AK-AVD-TEST-MGMT-NSG
+
+AK-AVD-PROD-MGMT-NSG
+```
+
+Associated Subnet:
+
+```text
+AK-AVD-<ENV>-SNET-MANAGEMENT
+```
+
+---
+
+## Security Model
+
+Phase 5 creates the Network Security Groups and associates them with their respective subnets.
+
+No custom Network Security Group rules are deployed during this phase.
+
+Only Azure default security rules are present.
+
+Custom security policies will be introduced in future phases when workload requirements are known.
+
+---
+
+# 10. Route Table Design
+
+Route tables are not deployed during Phase 5.
+
+---
+
+## Future Route Table Pattern
+
+```text
+AK-AVD-<ENV>-RT
+```
+
+Examples:
+
+```text
+AK-AVD-DEV-RT
+
+AK-AVD-TEST-RT
+
+AK-AVD-PROD-RT
+```
+
+---
+
+## Future Use Cases
+
+```text
+Azure Firewall Integration
+
+User Defined Routes
+
+Hub And Spoke Networking
+
+Hybrid Connectivity
+
+Enterprise Network Segmentation
+```
+
+---
+
+# 11. Resource Group Module
+
+## Module
+
+```text
+modules/resource-group
+```
+
+---
+
+## Purpose
+
+Creates environment-specific networking resource groups.
+
+---
+
+## Inputs
+
+```text
+prefix
+
+environment
+
+location
+
+tags
+```
+
+---
+
+## Outputs
+
+```text
+resource_group_id
+
+resource_group_name
+
+resource_group_location
+```
+
+---
+
+## Dependencies
+
+```text
+None
+```
+
+---
+
+# 12. Networking Module
+
+## Module
+
+```text
+modules/networking
+```
+
+---
+
+## Purpose
+
+Creates networking resources consumed by future platform components.
+
+---
+
+## Resources
+
+```text
+Virtual Network
+
+Subnets
+
+Network Security Groups
+
+Network Security Group Associations
+```
+
+---
+
+## Inputs
+
+```text
+resource_group_name
+
+location
+
+vnet_address_space
+
+subnet_definitions
+
+tags
+```
+
+---
+
+## Outputs
+
+```text
+vnet_id
+
+vnet_name
+
+subnet_ids
+
+network_security_group_ids
+```
+
+---
+
+## Dependencies
+
+```text
+modules/resource-group
+```
+
+---
+
+# 13. Terraform Variable Requirements
+
+The networking module requires environment-specific configuration.
+
+---
+
+## Required Variables
+
+### Virtual Network Address Space
+
+```hcl
+variable "vnet_address_space"
+```
+
+Purpose:
+
+```text
+Defines the virtual network CIDR range.
+```
+
+---
+
+### Subnet Definitions
+
+```hcl
+variable "subnet_definitions"
+```
+
+Purpose:
+
+```text
+Defines subnet CIDR ranges.
+```
+
+---
+
+### Tags
+
+```hcl
+variable "tags"
+```
+
+Purpose:
+
+```text
+Applies platform-standard tags to all resources.
+```
+
+---
+
+# 14. Deployment Flow
+
+```text
+GitHub Actions
+
+      │
+
+      ▼
+
+OIDC Authentication
+
+      │
+
+      ▼
+
+Terraform Init
+
+      │
+
+      ▼
+
+Resource Group Module
+
+      │
+
+      ▼
+
+Networking Module
+
+      │
+
+      ▼
+
+Resource Group
+
+      │
+
+      ▼
+
+Virtual Network
+
+      │
+
+      ▼
+
+Subnets
+
+      │
+
+      ▼
+
+Network Security Groups
+
+      │
+
+      ▼
+
+Subnet Associations
+```
+
+---
+
+# 15. Validation Checklist
+
+Verify:
+
+```text
+Resource Group Created
+
+Virtual Network Created
+
+Session Hosts Subnet Created
+
+Build Subnet Created
+
+Management Subnet Created
+
+Session Host NSG Created
+
+Build NSG Created
+
+Management NSG Created
+
+NSGs Associated With Subnets
+
+Terraform Validate Successful
+
+Terraform Plan Successful
+
+Terraform Apply Successful
+```
+
+---
+
+# 16. Exit Criteria
+
+Phase 5 is complete when:
+
+```text
+Resource Group Module Implemented
+
+Networking Module Implemented
+
+Virtual Network Created
+
+Session Hosts Subnet Created
+
+Build Subnet Created
+
+Management Subnet Created
+
+Session Host NSG Created
+
+Build NSG Created
+
+Management NSG Created
+
+Network Security Groups Associated
+
+Environment-Specific CIDR Strategy Implemented
+
+Platform Networking Foundation Operational
+```
+
+The platform is now ready for:
+
+```text
+Phase 6 - Identity And Access Control
+```
+
+---
+
+# 17. Next Phase
+
+Upon completion of Phase 5 the project moves to:
+
+```text
+Phase 6 - Identity And Access Control
+```
+
+Phase 6 introduces:
+
+```text
+Azure AD Groups
+
+Group-Based Access Control
+
+RBAC Assignments
+
+Identity Terraform Module
+```
+
+No Azure Virtual Desktop workloads are deployed during Phase 6.
+
+The focus remains on identity and authorization foundations before AVD resources are introduced.

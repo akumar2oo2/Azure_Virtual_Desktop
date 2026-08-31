@@ -71,7 +71,6 @@ variable "vnet_address_space" {
 variable "subnet_definitions" {
   description = "Subnet configuration definitions"
   type = map(object({
-    name             = string
     address_prefixes = list(string)
   }))
 }

@@ -42,7 +42,7 @@ locals {
 # Naming is centralized in the root module so networking resources
 # follow platform naming standards while modules remain generic.
 
-locals{
+locals {
   # Networking resource group name.
   network_resource_group_name = format(
     "%s-%s-%s-NET-RG",

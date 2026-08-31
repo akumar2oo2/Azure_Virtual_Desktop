@@ -101,3 +101,31 @@ module "networking" {
 
   tags = local.networking_tags
 }
+
+# =============================================================================
+# RESOURCE GROUP - IDENTITY
+# =============================================================================
+# Creates the resource group that supports the identity workload.
+
+module "identity_resource_group" {
+  count  = var.deploy_identity ? 1 : 0
+  source = "./modules/resource-group"
+
+  resource_group_name = local.identity_resource_group_name
+  location            = var.location
+  tags                = local.identity_tags
+}
+
+# =============================================================================
+# IDENTITY
+# =============================================================================
+# Creates the Microsoft Entra ID groups used by future platform workloads.
+
+module "identity" {
+  count  = var.deploy_identity ? 1 : 0
+  source = "./modules/identity"
+
+  admin_group_name    = local.admin_group_name
+  user_group_name     = local.user_group_name
+  helpdesk_group_name = local.helpdesk_group_name
+}

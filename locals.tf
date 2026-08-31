@@ -80,3 +80,45 @@ locals {
     Phase       = "Phase-5-Core-Infrastructure"
   })
 }
+
+# =============================================================================
+# LOCAL VALUES - Phase 6
+# =============================================================================
+# Naming is centralized in the root module so identity resources
+# follow platform naming standards while modules remain generic.
+
+locals {
+  # Identity resource group name.
+  identity_resource_group_name = format(
+    "%s-%s-%s-ID-RG",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  # Microsoft Entra ID group names.
+  admin_group_name = format(
+    "%s-%s-Admins",
+    var.project_prefix,
+    var.project_name
+  )
+
+  user_group_name = format(
+    "%s-%s-Users",
+    var.project_prefix,
+    var.project_name
+  )
+
+  helpdesk_group_name = format(
+    "%s-%s-Helpdesk",
+    var.project_prefix,
+    var.project_name
+  )
+
+  # Phase 6 identity tags.
+  identity_tags = merge(var.tags, {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+    Phase       = "Phase-6-Identity"
+  })
+}

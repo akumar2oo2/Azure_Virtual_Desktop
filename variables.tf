@@ -74,3 +74,13 @@ variable "subnet_definitions" {
     address_prefixes = list(string)
   }))
 }
+
+# -----------------------------------------------------------------------------
+# Phase 6 - Identity variables
+# -----------------------------------------------------------------------------
+
+variable "deploy_identity" {
+  description = "Controls deployment of identity resources"
+  type        = bool
+  default     = false
+}

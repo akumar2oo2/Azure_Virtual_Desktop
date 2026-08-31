@@ -87,3 +87,48 @@ output "network_security_group_ids" {
   description = "Map of Network Security Group IDs"
   value       = module.networking.network_security_group_ids
 }
+
+# -----------------------------------------------------------------------------
+# Phase 6 - Identity outputs
+# Consumed by future platform phases and used for deployment validation.
+# -----------------------------------------------------------------------------
+
+output "identity_resource_group_id" {
+  description = "Identity resource group ID"
+  value       = var.deploy_identity ? module.identity_resource_group[0].resource_group_id : null
+}
+
+output "identity_resource_group_name" {
+  description = "Identity resource group name"
+  value       = var.deploy_identity ? module.identity_resource_group[0].resource_group_name : null
+}
+
+output "admin_group_id" {
+  description = "Administrators group ID"
+  value       = var.deploy_identity ? module.identity[0].admin_group_id : null
+}
+
+output "admin_group_name" {
+  description = "Administrators group name"
+  value       = var.deploy_identity ? module.identity[0].admin_group_name : null
+}
+
+output "user_group_id" {
+  description = "Users group ID"
+  value       = var.deploy_identity ? module.identity[0].user_group_id : null
+}
+
+output "user_group_name" {
+  description = "Users group name"
+  value       = var.deploy_identity ? module.identity[0].user_group_name : null
+}
+
+output "helpdesk_group_id" {
+  description = "Helpdesk group ID"
+  value       = var.deploy_identity ? module.identity[0].helpdesk_group_id : null
+}
+
+output "helpdesk_group_name" {
+  description = "Helpdesk group name"
+  value       = var.deploy_identity ? module.identity[0].helpdesk_group_name : null
+}

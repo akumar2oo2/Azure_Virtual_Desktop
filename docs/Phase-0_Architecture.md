@@ -484,15 +484,13 @@ Windows 11 Enterprise Multi-Session
 ### Installed Components
 
 ```text
-Azure Monitor Agent
-
-AVD Agent
-
-AVD Bootloader
+Image Factory
 
 FSLogix
 
-Microsoft 365 Apps
+Security Baseline
+
+Azure Compute Gallery
 ```
 
 ---

@@ -53,4 +53,4 @@ subnet_definitions = {
 # Phase 6 - Identity configuration
 # -----------------------------------------------------------------------------
 
-deploy_identity = true
+deploy_identity = false

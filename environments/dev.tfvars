@@ -54,3 +54,32 @@ subnet_definitions = {
 # -----------------------------------------------------------------------------
 
 deploy_identity = false
+
+# -----------------------------------------------------------------------------
+# Phase 7 - Azure Virtual Desktop configuration
+# -----------------------------------------------------------------------------
+
+deploy_avd = true
+
+host_pools = {
+  general = {
+    host_pool_name         = "GENERAL"
+    host_pool_type         = "Pooled"
+    application_group_type = "Desktop"
+    load_balancer_type     = "BreadthFirst"
+  }
+
+  developers = {
+    host_pool_name         = "DEVELOPERS"
+    host_pool_type         = "Personal"
+    application_group_type = "Desktop"
+    load_balancer_type     = null
+  }
+
+  finance = {
+    host_pool_name         = "FINANCE"
+    host_pool_type         = "Pooled"
+    application_group_type = "RemoteApp"
+    load_balancer_type     = "DepthFirst"
+  }
+}

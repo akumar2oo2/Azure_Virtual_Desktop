@@ -129,3 +129,78 @@ module "identity" {
   user_group_name     = local.user_group_name
   helpdesk_group_name = local.helpdesk_group_name
 }
+
+# =============================================================================
+# RESOURCE GROUP - AZURE VIRTUAL DESKTOP
+# =============================================================================
+# Creates the resource group that hosts Azure Virtual Desktop resources.
+
+module "avd_resource_group" {
+  count  = var.deploy_avd ? 1 : 0
+  source = "./modules/resource-group"
+
+  resource_group_name = local.avd_resource_group_name
+  location            = var.location
+  tags                = local.avd_tags
+}
+
+# =============================================================================
+# AZURE VIRTUAL DESKTOP WORKSPACE
+# =============================================================================
+# Creates the Azure Virtual Desktop workspace.
+
+module "avd_workspace" {
+  count  = var.deploy_avd ? 1 : 0
+  source = "./modules/avd-workspace"
+
+  resource_group_name     = module.avd_resource_group[0].resource_group_name
+  location                = var.location
+  workspace_name          = local.workspace_name
+  workspace_friendly_name = local.workspace_friendly_name
+
+  tags = local.avd_tags
+}
+
+# =============================================================================
+# AZURE VIRTUAL DESKTOP HOST POOLS
+# =============================================================================
+# Creates Azure Virtual Desktop host pools.
+
+module "avd_hostpool" {
+  for_each = var.deploy_avd ? var.host_pools : {}
+
+  source = "./modules/avd-hostpool"
+
+  resource_group_name = module.avd_resource_group[0].resource_group_name
+  location            = var.location
+
+  host_pool_name     = local.host_pool_names[each.key]
+  host_pool_type     = each.value.host_pool_type
+  load_balancer_type = each.value.load_balancer_type
+
+  tags = local.avd_tags
+}
+
+# =============================================================================
+# AZURE VIRTUAL DESKTOP APPLICATION GROUPS
+# =============================================================================
+# Creates Azure Virtual Desktop application groups and registers them
+# with the workspace.
+
+module "avd_appgroup" {
+  for_each = var.deploy_avd ? var.host_pools : {}
+
+  source = "./modules/avd-appgroup"
+
+  resource_group_name = module.avd_resource_group[0].resource_group_name
+  location            = var.location
+
+  host_pool_id = module.avd_hostpool[each.key].host_pool_id
+  workspace_id = module.avd_workspace[0].workspace_id
+
+  application_group_name          = local.application_group_names[each.key]
+  application_group_friendly_name = local.application_group_friendly_names[each.key]
+  application_group_type          = each.value.application_group_type
+
+  tags = local.avd_tags
+}

@@ -132,3 +132,65 @@ output "helpdesk_group_name" {
   description = "Helpdesk group name"
   value       = var.deploy_identity ? module.identity[0].helpdesk_group_name : null
 }
+
+# -----------------------------------------------------------------------------
+# Phase 7 - Azure Virtual Desktop outputs
+# Consumed by future platform phases and used for deployment validation.
+# -----------------------------------------------------------------------------
+
+output "avd_resource_group_id" {
+  description = "Azure Virtual Desktop resource group ID"
+  value       = var.deploy_avd ? module.avd_resource_group[0].resource_group_id : null
+}
+
+output "avd_resource_group_name" {
+  description = "Azure Virtual Desktop resource group name"
+  value       = var.deploy_avd ? module.avd_resource_group[0].resource_group_name : null
+}
+
+output "workspace_id" {
+  description = "Azure Virtual Desktop workspace ID"
+  value       = var.deploy_avd ? module.avd_workspace[0].workspace_id : null
+}
+
+output "workspace_name" {
+  description = "Azure Virtual Desktop workspace name"
+  value       = var.deploy_avd ? module.avd_workspace[0].workspace_name : null
+}
+
+output "host_pool_ids" {
+  description = "Map of Azure Virtual Desktop host pool IDs"
+
+  value = var.deploy_avd ? {
+    for key, hostpool in module.avd_hostpool :
+    key => hostpool.host_pool_id
+  } : {}
+}
+
+output "host_pool_names" {
+  description = "Map of Azure Virtual Desktop host pool names"
+
+  value = var.deploy_avd ? {
+    for key, hostpool in module.avd_hostpool :
+    key => hostpool.host_pool_name
+  } : {}
+}
+
+output "application_group_ids" {
+  description = "Map of Azure Virtual Desktop application group IDs"
+
+  value = var.deploy_avd ? {
+    for key, appgroup in module.avd_appgroup :
+    key => appgroup.application_group_id
+  } : {}
+}
+
+output "application_group_names" {
+  description = "Map of Azure Virtual Desktop application group names"
+
+  value = var.deploy_avd ? {
+    for key, appgroup in module.avd_appgroup :
+    key => appgroup.application_group_name
+  } : {}
+}
+

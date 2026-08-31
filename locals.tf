@@ -122,3 +122,79 @@ locals {
     Phase       = "Phase-6-Identity"
   })
 }
+
+# =============================================================================
+# LOCAL VALUES - Phase 7
+# =============================================================================
+# Naming is centralized in the root module so Azure Virtual Desktop resources
+# follow platform naming standards while modules remain generic.
+
+locals {
+  # Azure Virtual Desktop resource group name.
+  avd_resource_group_name = format(
+    "%s-%s-%s-AVD-RG",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  # Azure Virtual Desktop workspace names.
+  workspace_name = format(
+    "%s-%s-%s-WS",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  workspace_friendly_name = "AVD Workspace"
+
+  # Azure Virtual Desktop host pool names.
+  host_pool_names = {
+    for key, pool in var.host_pools :
+    key => format(
+      "%s-%s-%s-HP-%s",
+      var.project_prefix,
+      var.project_name,
+      local.env_upper,
+      upper(pool.host_pool_name)
+    )
+  }
+
+  # Azure Virtual Desktop application group names.
+  application_group_names = {
+    for key, pool in var.host_pools :
+    key => (
+      pool.application_group_type == "Desktop" ?
+      format(
+        "%s-%s-%s-DAG-%s",
+        var.project_prefix,
+        var.project_name,
+        local.env_upper,
+        upper(pool.host_pool_name)
+      ) :
+      format(
+        "%s-%s-%s-RAG-%s",
+        var.project_prefix,
+        var.project_name,
+        local.env_upper,
+        upper(pool.host_pool_name)
+      )
+    )
+  }
+
+  application_group_friendly_names = {
+    for key, pool in var.host_pools :
+    key => (
+      pool.application_group_type == "Desktop"
+      ? "${title(lower(pool.host_pool_name))} Desktop"
+      : "${title(lower(pool.host_pool_name))} Applications"
+    )
+  }
+
+  # Phase 7 Azure Virtual Desktop tags.
+  avd_tags = merge(var.tags, {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+    Phase       = "Phase-7-AVD-Core"
+  })
+}

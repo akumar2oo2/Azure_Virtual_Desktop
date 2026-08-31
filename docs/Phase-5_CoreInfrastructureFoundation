@@ -111,7 +111,361 @@ Azure_Virtual_Desktop/
 
 ---
 
-# 4. Core Infrastructure Architecture
+# 4. Root Module Design
+
+The root Terraform module orchestrates the Phase 5 infrastructure deployment.
+
+The root module is responsible for:
+
+```text
+Environment Selection
+
+Environment Variable Assignment
+
+Module Orchestration
+
+Dependency Management
+
+Common Naming Values
+
+Output Exposure
+```
+
+The root module does not directly create Azure resource groups or networking resources.
+
+Azure resources are created only through their respective Terraform modules:
+
+```text
+modules/resource-group
+
+modules/networking
+```
+
+This ensures that resource creation remains modular, reusable, and aligned with the standards defined in:
+
+```text
+Phase-0_ModuleContracts.md
+```
+
+---
+
+## Root Module Components
+
+The Phase 5 root module consists of:
+
+```text
+main.tf
+
+locals.tf
+
+variables.tf
+
+outputs.tf
+```
+
+Each file has a clearly defined responsibility.
+
+---
+
+## main.tf
+
+The root `main.tf` file is responsible for:
+
+```text
+Calling The Resource Group Module
+
+Calling The Networking Module
+
+Passing Root Variables To Modules
+
+Passing Module Outputs Between Modules
+
+Managing Module Dependencies
+```
+
+The Resource Group module is called before the Networking module.
+
+The Networking module receives the resource group name and location through outputs exposed by the Resource Group module.
+
+The dependency flow is:
+
+```text
+Root Module
+
+      │
+
+      ▼
+
+Resource Group Module
+
+      │
+
+      ├── resource_group_name
+
+      └── resource_group_location
+
+      │
+
+      ▼
+
+Networking Module
+```
+
+The root module may reference module outputs when passing values between modules.
+
+Terraform modules must not directly reference resources or outputs from other modules within their own implementation.
+
+---
+
+## locals.tf
+
+The root `locals.tf` file is responsible for defining reusable values required for naming and orchestration.
+
+The local values include:
+
+```text
+Platform Prefix
+
+Workload Identifier
+
+Normalized Environment
+
+Common Naming Components
+```
+
+Example:
+
+```hcl
+locals {
+  prefix      = "AK"
+  workload    = "AVD"
+  environment = upper(var.environment)
+}
+```
+
+Environment-specific CIDR values must not be defined in `locals.tf`.
+
+CIDR values are supplied through:
+
+```text
+environments/dev.tfvars
+
+environments/test.tfvars
+
+environments/prod.tfvars
+```
+
+---
+
+## variables.tf
+
+The root `variables.tf` file defines the inputs required to deploy Phase 5 resources.
+
+Required root variables include:
+
+```text
+environment
+
+location
+
+vnet_address_space
+
+subnet_definitions
+
+tags
+```
+
+The environment-specific Terraform variable files provide values for these variables.
+
+The root module passes the required values to the Resource Group and Networking modules.
+
+All variables must include:
+
+```text
+Description
+
+Type
+```
+
+Variable validation should be used where appropriate to reject unsupported configuration values before deployment.
+
+---
+
+## outputs.tf
+
+The root `outputs.tf` file exposes values required for validation and future platform phases.
+
+Required root outputs include:
+
+```text
+resource_group_id
+
+resource_group_name
+
+resource_group_location
+
+vnet_id
+
+vnet_name
+
+subnet_ids
+
+network_security_group_ids
+```
+
+The root module exposes these values by referencing the outputs of the Resource Group and Networking modules.
+
+Future phases consume reusable infrastructure values through documented module outputs rather than directly referencing resources created inside another module.
+
+---
+
+## Environment Configuration Flow
+
+The selected environment determines which Terraform variable file is loaded.
+
+```text
+DEV
+
+environments/dev.tfvars
+```
+
+```text
+TEST
+
+environments/test.tfvars
+```
+
+```text
+PROD
+
+environments/prod.tfvars
+```
+
+The environment configuration provides:
+
+```text
+Environment
+
+Azure Region
+
+Virtual Network Address Space
+
+Subnet CIDR Definitions
+
+Resource Tags
+```
+
+The environment configuration flow is:
+
+```text
+Selected Environment
+
+      │
+
+      ▼
+
+Environment tfvars File
+
+      │
+
+      ▼
+
+Root Variables
+
+      │
+
+      ▼
+
+Root Module
+
+      │
+
+      ├── Resource Group Module
+
+      └── Networking Module
+```
+
+---
+
+## Module Dependency Flow
+
+The Phase 5 module dependency flow is:
+
+```text
+Environment tfvars
+
+      │
+
+      ▼
+
+Root Module
+
+      │
+
+      ▼
+
+Resource Group Module
+
+      │
+
+      ├── Resource Group ID
+
+      ├── Resource Group Name
+
+      └── Resource Group Location
+
+      │
+
+      ▼
+
+Networking Module
+
+      │
+
+      ├── Virtual Network
+
+      ├── Subnets
+
+      ├── Network Security Groups
+
+      └── Network Security Group Associations
+```
+
+The Networking module depends on the Resource Group module because networking resources require an existing resource group.
+
+This dependency is established by passing the Resource Group module outputs into the Networking module inputs.
+
+No explicit `depends_on` declaration is required when one module directly consumes another module's outputs because Terraform derives the dependency from those references.
+
+---
+
+## Root Module Design Principles
+
+The Phase 5 root module must follow these principles:
+
+```text
+No Azure Resources Created Directly In The Root Module
+
+No Hardcoded Environment-Specific CIDRs
+
+No Hardcoded Azure Resource Names
+
+Environment Configuration Supplied Through tfvars
+
+Resource Creation Delegated To Dedicated Modules
+
+Module Communication Through Variables And Outputs
+
+Reusable Values Defined Once
+
+Root Outputs Exposed For Validation And Future Phases
+```
+
+This design keeps the root module focused on orchestration while the Resource Group and Networking modules remain responsible for creating and managing their respective Azure resources.
+
+---
+
+# 5. Core Infrastructure Architecture
 
 The platform uses environment-isolated networking.
 
@@ -175,7 +529,7 @@ Future Platform Components
 
 ---
 
-# 5. Resource Group Strategy
+# 6. Resource Group Strategy
 
 Each environment receives its own networking resource group.
 
@@ -223,7 +577,7 @@ Future Networking Components
 
 ---
 
-# 6. Virtual Network Strategy
+# 7. Virtual Network Strategy
 
 Each environment receives a dedicated virtual network.
 
@@ -267,7 +621,7 @@ Environment Isolation First
 
 ---
 
-# 7. CIDR Strategy
+# 8. CIDR Strategy
 
 Network address spaces are environment-specific.
 
@@ -322,6 +676,24 @@ subnet_definitions = {
   management   = "10.10.3.0/24"
 }
 ```
+### Recommended Environment Allocation
+
+```text
+DEV
+10.10.0.0/16
+
+TEST
+10.20.0.0/16
+
+PROD
+10.30.0.0/16
+
+Note:
+
+These values are recommended standards.
+Terraform modules do not contain hardcoded CIDRs.
+Actual values are provided through environment tfvars files.
+```
 
 ---
 
@@ -335,11 +707,12 @@ Environment-Specific Configuration
 Reusable Networking Module
 
 Future Expansion Support
+
 ```
 
 ---
 
-# 8. Subnet Strategy
+# 9. Subnet Strategy
 
 Each environment receives three dedicated subnets.
 
@@ -429,7 +802,7 @@ Jump Hosts
 
 ---
 
-# 9. Network Security Group Strategy
+# 10. Network Security Group Strategy
 
 The platform uses one Network Security Group per subnet.
 
@@ -537,7 +910,7 @@ Custom security policies will be introduced in future phases when workload requi
 
 ---
 
-# 10. Route Table Design
+# 11. Route Table Design
 
 Route tables are not deployed during Phase 5.
 
@@ -577,7 +950,7 @@ Enterprise Network Segmentation
 
 ---
 
-# 11. Resource Group Module
+# 12. Resource Group Module
 
 ## Module
 
@@ -600,9 +973,22 @@ prefix
 
 environment
 
+workload_code
+
 location
 
 tags
+```
+
+## Supported Workload Codes
+
+```text
+NET = Networking
+IMG = Image Infrastructure
+ID  = Identity
+AVD = Azure Virtual Desktop
+MON = Monitoring
+FSL = FSLogix Storage
 ```
 
 ---
@@ -627,7 +1013,7 @@ None
 
 ---
 
-# 12. Networking Module
+# 13. Networking Module
 
 ## Module
 
@@ -695,7 +1081,7 @@ modules/resource-group
 
 ---
 
-# 13. Terraform Variable Requirements
+# 14. Terraform Variable Requirements
 
 The networking module requires environment-specific configuration.
 
@@ -745,7 +1131,7 @@ Applies platform-standard tags to all resources.
 
 ---
 
-# 14. Deployment Flow
+# 15. Deployment Flow
 
 ```text
 GitHub Actions
@@ -807,7 +1193,7 @@ Subnet Associations
 
 ---
 
-# 15. Validation Checklist
+# 16. Validation Checklist
 
 Verify:
 
@@ -839,7 +1225,7 @@ Terraform Apply Successful
 
 ---
 
-# 16. Exit Criteria
+# 17. Exit Criteria
 
 Phase 5 is complete when:
 
@@ -866,6 +1252,10 @@ Network Security Groups Associated
 
 Environment-Specific CIDR Strategy Implemented
 
+Terraform Validate Successful
+
+Terraform Plan Successful
+
 Platform Networking Foundation Operational
 ```
 
@@ -877,7 +1267,7 @@ Phase 6 - Identity And Access Control
 
 ---
 
-# 17. Next Phase
+# 18. Next Phase
 
 Upon completion of Phase 5 the project moves to:
 

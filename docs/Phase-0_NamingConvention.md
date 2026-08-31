@@ -357,15 +357,31 @@ AK-AVD-DEV-SNET-MANAGEMENT
 Pattern:
 
 ```text
-AK-AVD-<ENV>-NSG
+AK-AVD-<ENV>-<PURPOSE>-NSG
 ```
 
 Examples:
 
 ```text
-AK-AVD-DEV-NSG
+AK-AVD-DEV-SH-NSG
+AK-AVD-DEV-BUILD-NSG
+AK-AVD-DEV-MGMT-NSG
 
-AK-AVD-PROD-NSG
+AK-AVD-TEST-SH-NSG
+AK-AVD-TEST-BUILD-NSG
+AK-AVD-TEST-MGMT-NSG
+
+AK-AVD-PROD-SH-NSG
+AK-AVD-PROD-BUILD-NSG
+AK-AVD-PROD-MGMT-NSG
+```
+
+Purpose codes:
+
+```test
+SH = Session Hosts
+BUILD = Image Factory Build Resources
+MGMT = Management Resources
 ```
 
 ---

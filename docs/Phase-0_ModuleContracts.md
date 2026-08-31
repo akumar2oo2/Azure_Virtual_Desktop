@@ -305,9 +305,22 @@ prefix
 
 environment
 
+workload_code
+
 location
 
 tags
+```
+
+## Supported Workload Codes
+
+```text
+NET = Networking
+IMG = Image Infrastructure
+ID  = Identity
+AVD = Azure Virtual Desktop
+MON = Monitoring
+FSL = FSLogix Storage
 ```
 
 ---

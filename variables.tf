@@ -125,3 +125,64 @@ variable "host_pools" {
     error_message = "application_group_type must be Desktop or RemoteApp."
   }
 }
+
+# -----------------------------------------------------------------------------
+# Phase 8 - Monitoring variables
+# -----------------------------------------------------------------------------
+
+variable "deploy_monitoring" {
+  description = "Controls deployment of monitoring resources"
+  type        = bool
+  default     = false
+}
+
+variable "monitoring" {
+  description = "Object-driven monitoring platform configuration"
+
+  type = object({
+    enabled = bool
+
+    law = object({
+      enabled        = bool
+      retention_days = number
+      daily_quota_gb = number
+      sku            = string
+    })
+
+    dcrs = map(object({
+      enabled                    = bool
+      description                = string
+      windows_event_logs         = list(string)
+      performance_counters       = list(string)
+      sampling_frequency_seconds = number
+    }))
+
+    workbooks = map(object({
+      enabled      = bool
+      display_name = string
+    }))
+
+    action_groups = map(object({
+      enabled    = bool
+      short_name = string
+
+      email_receivers = optional(list(object({
+        name          = string
+        email_address = string
+      })), [])
+    }))
+
+    alerts = map(object({
+      enabled              = bool
+      severity             = number
+      threshold            = optional(number)
+      evaluation_frequency = string
+      window_size          = string
+      action_group         = string
+
+      query              = string
+      operator           = string
+      aggregation_method = string
+    }))
+  })
+}

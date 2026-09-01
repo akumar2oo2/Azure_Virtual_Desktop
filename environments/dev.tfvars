@@ -83,3 +83,161 @@ host_pools = {
     load_balancer_type     = "DepthFirst"
   }
 }
+
+# -----------------------------------------------------------------------------
+# Phase 8 - Monitoring configuration
+# -----------------------------------------------------------------------------
+
+deploy_monitoring = true
+
+monitoring = {
+  enabled = true
+
+  law = {
+    enabled        = true
+    retention_days = 30
+    daily_quota_gb = -1
+    sku            = "PerGB2018"
+  }
+
+  dcrs = {
+    sessionhosts = {
+      enabled     = true
+      description = "AVD Session Host Monitoring"
+
+      windows_event_logs = [
+        "Application!*[System[(Level=1 or Level=2 or Level=3)]]",
+        "System!*[System[(Level=1 or Level=2 or Level=3)]]"
+      ]
+
+      performance_counters = [
+        "\\Processor(_Total)\\% Processor Time",
+        "\\Memory\\% Committed Bytes In Use"
+      ]
+
+      sampling_frequency_seconds = 60
+    }
+
+    fslogix = {
+      enabled     = true
+      description = "FSLogix Monitoring"
+
+      windows_event_logs = [
+        "Application!*[System[(Level=1 or Level=2 or Level=3)]]"
+      ]
+
+      performance_counters = [
+        "\\LogicalDisk(_Total)\\% Free Space"
+      ]
+
+      sampling_frequency_seconds = 60
+    }
+
+    platform = {
+      enabled     = true
+      description = "Platform Monitoring"
+
+      windows_event_logs = [
+        "System!*[System[(Level=1 or Level=2 or Level=3)]]"
+      ]
+
+      performance_counters = [
+        "\\System\\Processes"
+      ]
+
+      sampling_frequency_seconds = 60
+    }
+  }
+
+  workbooks = {
+    avd = {
+      enabled      = true
+      display_name = "Azure Virtual Desktop Overview"
+    }
+
+    sessionhosts = {
+      enabled      = true
+      display_name = "Session Host Overview"
+    }
+
+    fslogix = {
+      enabled      = true
+      display_name = "FSLogix Overview"
+    }
+  }
+
+  action_groups = {
+    operations = {
+      enabled    = true
+      short_name = "ops"
+
+      email_receivers = []
+    }
+
+    platform = {
+      enabled    = true
+      short_name = "platform"
+
+      email_receivers = []
+    }
+  }
+
+  alerts = {
+    cpu = {
+      enabled                = true
+      severity               = 2
+      threshold              = 80
+      evaluation_frequency   = "PT5M"
+      window_size            = "PT15M"
+      action_group           = "operations"
+
+      query                  = "Heartbeat | count"
+      operator               = "GreaterThan"
+      aggregation_method     = "Count"
+
+      minimum_failing_periods_to_trigger = 1
+      number_of_evaluation_periods       = 1
+
+      auto_mitigation_enabled = true
+      skip_query_validation   = true
+    }
+
+    memory = {
+      enabled                = true
+      severity               = 2
+      threshold              = 85
+      evaluation_frequency   = "PT5M"
+      window_size            = "PT15M"
+      action_group           = "operations"
+
+      query                  = "Heartbeat | count"
+      operator               = "GreaterThan"
+      aggregation_method     = "Count"
+
+      minimum_failing_periods_to_trigger = 1
+      number_of_evaluation_periods       = 1
+
+      auto_mitigation_enabled = true
+      skip_query_validation   = true
+    }
+
+    heartbeat = {
+      enabled                = true
+      severity               = 1
+      threshold              = 1
+      evaluation_frequency   = "PT5M"
+      window_size            = "PT15M"
+      action_group           = "platform"
+
+      query                  = "Heartbeat | count"
+      operator               = "GreaterThan"
+      aggregation_method     = "Count"
+
+      minimum_failing_periods_to_trigger = 1
+      number_of_evaluation_periods       = 1
+
+      auto_mitigation_enabled = true
+      skip_query_validation   = true
+    }
+  }
+}

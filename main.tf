@@ -204,3 +204,81 @@ module "avd_appgroup" {
 
   tags = local.avd_tags
 }
+
+# =============================================================================
+# RESOURCE GROUP - MONITORING
+# =============================================================================
+# Creates the resource group that hosts monitoring resources.
+
+module "monitoring_resource_group" {
+  count  = var.deploy_monitoring ? 1 : 0
+  source = "./modules/resource-group"
+
+  resource_group_name = local.monitoring_resource_group_name
+  location            = var.location
+  tags                = local.monitoring_tags
+}
+
+# =============================================================================
+# MONITORING PLATFORM
+# =============================================================================
+# Creates the monitoring foundation for Azure Virtual Desktop.
+
+module "monitoring" {
+  count  = var.deploy_monitoring ? 1 : 0
+  source = "./modules/monitoring"
+
+  resource_group_name = module.monitoring_resource_group[0].resource_group_name
+  location            = var.location
+
+  law_name = local.law_name
+
+  monitoring = merge(
+    var.monitoring,
+    {
+      dcrs = {
+        for key, dcr in var.monitoring.dcrs :
+        key => merge(
+          dcr,
+          {
+            name = local.dcr_names[key]
+          }
+        )
+      }
+
+      workbooks = {
+        for key, workbook in var.monitoring.workbooks :
+        key => merge(
+          workbook,
+          {
+            workbook_id = local.workbook_ids[key]
+          }
+        )
+      }
+
+      action_groups = {
+        for key, action_group in var.monitoring.action_groups :
+        key => merge(
+          action_group,
+          {
+            name = local.action_group_names[key]
+          }
+        )
+      }
+
+      alerts = {
+        for key, alert in var.monitoring.alerts :
+        key => merge(
+          alert,
+          {
+            name         = local.alert_names[key]
+            display_name = local.alert_names[key]
+            description  = local.alert_names[key]
+          }
+        )
+      }
+    }
+  )
+
+  tags = local.monitoring_tags
+}

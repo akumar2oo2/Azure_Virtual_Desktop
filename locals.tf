@@ -198,3 +198,97 @@ locals {
     Phase       = "Phase-7-AVD-Core"
   })
 }
+
+# =============================================================================
+# LOCAL VALUES - Phase 8
+# =============================================================================
+# Naming is centralized in the root module so monitoring resources
+# follow platform naming standards while modules remain generic.
+
+locals {
+  # Monitoring resource group name.
+  monitoring_resource_group_name = format(
+    "%s-%s-%s-MON-RG",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  # Log Analytics Workspace name.
+  law_name = format(
+    "%s-%s-%s-LAW",
+    var.project_prefix,
+    var.project_name,
+    local.env_upper
+  )
+
+  # Data Collection Rule names.
+  dcr_names = {
+    for key, dcr in var.monitoring.dcrs :
+    key => format(
+      "%s-%s-%s-DCR-%s",
+      var.project_prefix,
+      var.project_name,
+      local.env_upper,
+      upper(key)
+    )
+  }
+
+  # Workbook names.
+  workbook_names = {
+    for key, workbook in var.monitoring.workbooks :
+    key => format(
+      "%s-%s-%s-WB-%s",
+      var.project_prefix,
+      var.project_name,
+      local.env_upper,
+      upper(key)
+    )
+  }
+
+  # Action Group names.
+  action_group_names = {
+    for key, action_group in var.monitoring.action_groups :
+    key => format(
+      "%s-%s-%s-AG-%s",
+      var.project_prefix,
+      var.project_name,
+      local.env_upper,
+      upper(key)
+    )
+  }
+
+  # Alert names.
+  alert_names = {
+    for key, alert in var.monitoring.alerts :
+    key => format(
+      "%s-%s-%s-ALERT-%s",
+      var.project_prefix,
+      var.project_name,
+      local.env_upper,
+      upper(key)
+    )
+  }
+
+  # Workbook GUIDs.
+  workbook_ids = {
+    for key, workbook in var.monitoring.workbooks :
+    key => uuidv5(
+      "url",
+      format(
+        "%s-%s-%s-WB-%s",
+        var.project_prefix,
+        var.project_name,
+        local.env_upper,
+        upper(key)
+      )
+    )
+  }
+
+  # Phase 8 monitoring tags.
+  monitoring_tags = merge(var.tags, {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+    Phase       = "Phase-8-Monitoring"
+  })
+}

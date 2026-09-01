@@ -194,3 +194,57 @@ output "application_group_names" {
   } : {}
 }
 
+# -----------------------------------------------------------------------------
+# Phase 8 - Monitoring outputs
+# Consumed by future platform phases and used for deployment validation.
+# -----------------------------------------------------------------------------
+
+output "monitoring_resource_group_id" {
+  description = "Monitoring resource group ID"
+  value       = var.deploy_monitoring ? module.monitoring_resource_group[0].resource_group_id : null
+}
+
+output "monitoring_resource_group_name" {
+  description = "Monitoring resource group name"
+  value       = var.deploy_monitoring ? module.monitoring_resource_group[0].resource_group_name : null
+}
+
+output "law_id" {
+  description = "Log Analytics Workspace ID"
+  value       = var.deploy_monitoring ? module.monitoring[0].law_id : null
+}
+
+output "law_name" {
+  description = "Log Analytics Workspace name"
+  value       = var.deploy_monitoring ? module.monitoring[0].law_name : null
+}
+
+output "dcr_ids" {
+  description = "Map of Data Collection Rule IDs"
+  value       = var.deploy_monitoring ? module.monitoring[0].dcr_ids : {}
+}
+
+output "dcr_names" {
+  description = "Map of Data Collection Rule names"
+  value       = var.deploy_monitoring ? module.monitoring[0].dcr_names : {}
+}
+
+output "workbook_ids" {
+  description = "Map of Workbook IDs"
+  value       = var.deploy_monitoring ? module.monitoring[0].workbook_ids : {}
+}
+
+output "workbook_names" {
+  description = "Map of Workbook names"
+  value       = var.deploy_monitoring ? module.monitoring[0].workbook_names : {}
+}
+
+output "action_group_ids" {
+  description = "Map of Action Group IDs"
+  value       = var.deploy_monitoring ? module.monitoring[0].action_group_ids : {}
+}
+
+output "action_group_names" {
+  description = "Map of Action Group names"
+  value       = var.deploy_monitoring ? module.monitoring[0].action_group_names : {}
+}

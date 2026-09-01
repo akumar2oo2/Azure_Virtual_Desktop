@@ -63,24 +63,27 @@ deploy_avd = true
 
 host_pools = {
   general = {
-    host_pool_name         = "GENERAL"
-    host_pool_type         = "Pooled"
-    application_group_type = "Desktop"
-    load_balancer_type     = "BreadthFirst"
+    host_pool_name                   = "GENERAL"
+    host_pool_type                   = "Pooled"
+    application_group_type           = "Desktop"
+    load_balancer_type               = "BreadthFirst"
+    personal_desktop_assignment_type = null
   }
 
   developers = {
-    host_pool_name         = "DEVELOPERS"
-    host_pool_type         = "Personal"
-    application_group_type = "Desktop"
-    load_balancer_type     = null
+    host_pool_name                   = "DEVELOPERS"
+    host_pool_type                   = "Personal"
+    application_group_type           = "Desktop"
+    load_balancer_type               = null
+    personal_desktop_assignment_type = "Automatic"
   }
 
   finance = {
-    host_pool_name         = "FINANCE"
-    host_pool_type         = "Pooled"
-    application_group_type = "RemoteApp"
-    load_balancer_type     = "DepthFirst"
+    host_pool_name                   = "FINANCE"
+    host_pool_type                   = "Pooled"
+    application_group_type           = "RemoteApp"
+    load_balancer_type               = "DepthFirst"
+    personal_desktop_assignment_type = null
   }
 }
 
@@ -153,47 +156,91 @@ monitoring = {
     avd = {
       enabled      = true
       display_name = "Azure Virtual Desktop Overview"
+
+      description = "Azure Virtual Desktop Monitoring Workbook"
+
+      data_json = jsonencode({
+        version = "Notebook/1.0"
+
+        items = [
+          {
+            type = 1
+
+            content = {
+              json = "Azure Virtual Desktop Overview"
+            }
+
+            name = "text-0"
+          }
+        ]
+
+        isLocked = false
+      })
     }
 
     sessionhosts = {
       enabled      = true
       display_name = "Session Host Overview"
+
+      description = "Session Host Monitoring Workbook"
+
+      data_json = jsonencode({
+        version = "Notebook/1.0"
+
+        items = [
+          {
+            type = 1
+
+            content = {
+              json = "Session Host Monitoring Overview"
+            }
+
+            name = "text-0"
+          }
+        ]
+
+        isLocked = false
+      })
     }
 
     fslogix = {
       enabled      = true
       display_name = "FSLogix Overview"
-    }
-  }
 
-  action_groups = {
-    operations = {
-      enabled    = true
-      short_name = "ops"
+      description = "FSLogix Monitoring Workbook"
 
-      email_receivers = []
-    }
+      data_json = jsonencode({
+        version = "Notebook/1.0"
 
-    platform = {
-      enabled    = true
-      short_name = "platform"
+        items = [
+          {
+            type = 1
 
-      email_receivers = []
+            content = {
+              json = "FSLogix Monitoring Overview"
+            }
+
+            name = "text-0"
+          }
+        ]
+
+        isLocked = false
+      })
     }
   }
 
   alerts = {
     cpu = {
-      enabled                = true
-      severity               = 2
-      threshold              = 80
-      evaluation_frequency   = "PT5M"
-      window_size            = "PT15M"
-      action_group           = "operations"
+      enabled              = true
+      severity             = 2
+      threshold            = 80
+      evaluation_frequency = "PT5M"
+      window_size          = "PT15M"
+      action_group         = "operations"
 
-      query                  = "Heartbeat | count"
-      operator               = "GreaterThan"
-      aggregation_method     = "Count"
+      query              = "Heartbeat | count"
+      operator           = "GreaterThan"
+      aggregation_method = "Count"
 
       minimum_failing_periods_to_trigger = 1
       number_of_evaluation_periods       = 1
@@ -203,16 +250,16 @@ monitoring = {
     }
 
     memory = {
-      enabled                = true
-      severity               = 2
-      threshold              = 85
-      evaluation_frequency   = "PT5M"
-      window_size            = "PT15M"
-      action_group           = "operations"
+      enabled              = true
+      severity             = 2
+      threshold            = 85
+      evaluation_frequency = "PT5M"
+      window_size          = "PT15M"
+      action_group         = "operations"
 
-      query                  = "Heartbeat | count"
-      operator               = "GreaterThan"
-      aggregation_method     = "Count"
+      query              = "Heartbeat | count"
+      operator           = "GreaterThan"
+      aggregation_method = "Count"
 
       minimum_failing_periods_to_trigger = 1
       number_of_evaluation_periods       = 1
@@ -222,16 +269,16 @@ monitoring = {
     }
 
     heartbeat = {
-      enabled                = true
-      severity               = 1
-      threshold              = 1
-      evaluation_frequency   = "PT5M"
-      window_size            = "PT15M"
-      action_group           = "platform"
+      enabled              = true
+      severity             = 1
+      threshold            = 1
+      evaluation_frequency = "PT5M"
+      window_size          = "PT15M"
+      action_group         = "platform"
 
-      query                  = "Heartbeat | count"
-      operator               = "GreaterThan"
-      aggregation_method     = "Count"
+      query              = "Heartbeat | count"
+      operator           = "GreaterThan"
+      aggregation_method = "Count"
 
       minimum_failing_periods_to_trigger = 1
       number_of_evaluation_periods       = 1

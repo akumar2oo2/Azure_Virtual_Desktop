@@ -26,6 +26,12 @@ variable "load_balancer_type" {
   default     = null
 }
 
+variable "personal_desktop_assignment_type" {
+  description = "Assignment method for Personal Azure Virtual Desktop host pools"
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags applied to the Azure Virtual Desktop host pool"
   type        = map(string)

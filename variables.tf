@@ -99,10 +99,11 @@ variable "host_pools" {
   description = "Azure Virtual Desktop host pool configuration"
 
   type = map(object({
-    host_pool_name         = string
-    host_pool_type         = string
-    application_group_type = string
-    load_balancer_type     = optional(string)
+    host_pool_name                   = string
+    host_pool_type                   = string
+    application_group_type           = string
+    load_balancer_type               = optional(string)
+    personal_desktop_assignment_type = optional(string)
   }))
 
   default = {}

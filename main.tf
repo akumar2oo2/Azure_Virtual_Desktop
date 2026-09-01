@@ -178,6 +178,8 @@ module "avd_hostpool" {
   host_pool_type     = each.value.host_pool_type
   load_balancer_type = each.value.load_balancer_type
 
+  personal_desktop_assignment_type = each.value.personal_desktop_assignment_type
+
   tags = local.avd_tags
 }
 

@@ -10,12 +10,20 @@ resource "azurerm_virtual_desktop_host_pool" "hostpool" {
 
   friendly_name = var.host_pool_name
 
-  type                 = var.host_pool_type
+  type = var.host_pool_type
+
   load_balancer_type = (
     var.host_pool_type == "Personal"
-    ? "BreadthFirst"
+    ? "Persistent"
     : var.load_balancer_type
   )
+
+  personal_desktop_assignment_type = (
+    var.host_pool_type == "Personal"
+    ? var.personal_desktop_assignment_type
+    : null
+  )
+
   validate_environment = false
 
   tags = var.tags

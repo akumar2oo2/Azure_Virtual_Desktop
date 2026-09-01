@@ -156,76 +156,35 @@ monitoring = {
     avd = {
       enabled      = true
       display_name = "Azure Virtual Desktop Overview"
-
-      description = "Azure Virtual Desktop Monitoring Workbook"
-
-      data_json = jsonencode({
-        version = "Notebook/1.0"
-
-        items = [
-          {
-            type = 1
-
-            content = {
-              json = "Azure Virtual Desktop Overview"
-            }
-
-            name = "text-0"
-          }
-        ]
-
-        isLocked = false
-      })
+      description  = "Azure Virtual Desktop Monitoring Workbook"
     }
 
     sessionhosts = {
       enabled      = true
       display_name = "Session Host Overview"
-
-      description = "Session Host Monitoring Workbook"
-
-      data_json = jsonencode({
-        version = "Notebook/1.0"
-
-        items = [
-          {
-            type = 1
-
-            content = {
-              json = "Session Host Monitoring Overview"
-            }
-
-            name = "text-0"
-          }
-        ]
-
-        isLocked = false
-      })
+      description  = "Session Host Monitoring Workbook"
     }
 
     fslogix = {
       enabled      = true
       display_name = "FSLogix Overview"
+      description  = "FSLogix Monitoring Workbook"
+    }
+  }
 
-      description = "FSLogix Monitoring Workbook"
+  action_groups = {
+    operations = {
+      enabled    = true
+      short_name = "ops"
 
-      data_json = jsonencode({
-        version = "Notebook/1.0"
+      email_receivers = []
+    }
 
-        items = [
-          {
-            type = 1
+    platform = {
+      enabled    = true
+      short_name = "platform"
 
-            content = {
-              json = "FSLogix Monitoring Overview"
-            }
-
-            name = "text-0"
-          }
-        ]
-
-        isLocked = false
-      })
+      email_receivers = []
     }
   }
 

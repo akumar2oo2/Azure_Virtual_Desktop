@@ -161,6 +161,7 @@ variable "monitoring" {
     workbooks = map(object({
       enabled      = bool
       display_name = string
+      description  = string
     }))
 
     action_groups = map(object({

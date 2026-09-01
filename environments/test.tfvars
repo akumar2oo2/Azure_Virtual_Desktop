@@ -156,16 +156,19 @@ monitoring = {
     avd = {
       enabled      = true
       display_name = "Azure Virtual Desktop Overview"
+      description  = "Azure Virtual Desktop Monitoring Workbook"
     }
 
     sessionhosts = {
       enabled      = true
       display_name = "Session Host Overview"
+      description  = "Session Host Monitoring Workbook"
     }
 
     fslogix = {
       enabled      = true
       display_name = "FSLogix Overview"
+      description  = "FSLogix Monitoring Workbook"
     }
   }
 

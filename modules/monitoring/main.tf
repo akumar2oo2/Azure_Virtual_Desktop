@@ -152,7 +152,23 @@ resource "azurerm_application_insights_workbook" "workbooks" {
 
   display_name = each.value.display_name
   description  = each.value.description
-  data_json    = each.value.data_json
+  data_json = jsonencode({
+    version = "Notebook/1.0"
+
+    items = [
+      {
+        type = 1
+
+        content = {
+          json = each.value.description
+        }
+
+        name = "text-0"
+      }
+    ]
+
+    isLocked = false
+  })
 
   source_id = azurerm_log_analytics_workspace.law[0].id
   category  = "workbook"

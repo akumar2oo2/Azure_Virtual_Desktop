@@ -42,7 +42,6 @@ variable "monitoring" {
       workbook_id  = string
       display_name = string
       description  = string
-      data_json    = string
     }))
 
     action_groups = map(object({

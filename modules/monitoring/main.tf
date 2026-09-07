@@ -83,7 +83,7 @@ resource "azurerm_monitor_data_collection_rule" "dcrs" {
       for_each = length(each.value.performance_counters) > 0 ? [1] : []
 
       content {
-        name                          = "performance-counters-${each.key}"
+        name                          = "perf-counters-${each.key}"
         streams                       = ["Microsoft-Perf"]
         counter_specifiers            = each.value.performance_counters
         sampling_frequency_in_seconds = each.value.sampling_frequency_seconds

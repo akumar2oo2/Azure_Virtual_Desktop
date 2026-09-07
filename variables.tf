@@ -185,6 +185,11 @@ variable "monitoring" {
       query              = string
       operator           = string
       aggregation_method = string
+
+      minimum_failing_periods_to_trigger = number
+      number_of_evaluation_periods = number
+      auto_mitigation_enabled = bool
+      skip_query_validation = bool
     }))
   })
 }

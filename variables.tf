@@ -96,7 +96,7 @@ variable "deploy_avd" {
 }
 
 variable "host_pools" {
-  description = "Azure Virtual Desktop host pool configuration"
+  description = "Azure Virtual Desktop Host Pool and Session Host configurations"
 
   type = map(object({
     host_pool_name                   = string
@@ -104,6 +104,35 @@ variable "host_pools" {
     application_group_type           = string
     load_balancer_type               = optional(string)
     personal_desktop_assignment_type = optional(string)
+
+    session_hosts = object({
+      enabled = bool
+
+      count   = number
+      vm_size = string
+
+      join_type = string
+
+      image = object({
+        definition = string
+        version    = string
+      })
+
+      network = object({
+        subnet_key = string
+      })
+
+      os_disk = object({
+        storage_account_type = string
+        disk_size_gb         = number
+        caching              = string
+      })
+
+      monitoring = object({
+        ama_enabled = bool
+        dcr_keys    = list(string)
+      })
+    })
   }))
 
   default = {}
@@ -124,6 +153,69 @@ variable "host_pools" {
     ])
 
     error_message = "application_group_type must be Desktop or RemoteApp."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      hp.session_hosts.count >= 0
+    ])
+
+    error_message = "Session Host count must be zero or greater."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      !hp.session_hosts.enabled || trimspace(hp.session_hosts.vm_size) != ""
+    ])
+
+    error_message = "vm_size must not be empty when Session Host deployment is enabled."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      contains(["EntraID"], hp.session_hosts.join_type)
+    ])
+
+    error_message = "join_type must be EntraID."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      !hp.session_hosts.enabled || trimspace(hp.session_hosts.image.definition) != ""
+    ])
+
+    error_message = "Image definition must not be empty when Session Host deployment is enabled."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      !hp.session_hosts.enabled || trimspace(hp.session_hosts.image.version) != ""
+    ])
+
+    error_message = "Image version must not be empty when Session Host deployment is enabled."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      !hp.session_hosts.enabled || trimspace(hp.session_hosts.network.subnet_key) != ""
+    ])
+
+    error_message = "Session Host subnet_key must not be empty when Session Host deployment is enabled."
+  }
+
+  validation {
+    condition = alltrue([
+      for hp in values(var.host_pools) :
+      hp.session_hosts.os_disk.disk_size_gb > 0
+    ])
+
+    error_message = "Session Host OS disk size must be greater than zero."
   }
 }
 
@@ -192,4 +284,24 @@ variable "monitoring" {
       skip_query_validation = bool
     }))
   })
+}
+
+# -----------------------------------------------------------------------------
+# Phase 9 - Session Host variables
+# -----------------------------------------------------------------------------
+
+variable "session_host_admin_username" {
+  description = "Local administrator username for Session Host virtual machines"
+  type        = string
+}
+
+variable "session_host_admin_password" {
+  description = "Local administrator password for Session Host virtual machines"
+  type        = string
+  sensitive   = true
+}
+
+variable "avd_registration_artifact_url" {
+  description = "URL of the Microsoft Azure Virtual Desktop Session Host registration artifact"
+  type        = string
 }

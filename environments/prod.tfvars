@@ -56,7 +56,7 @@ subnet_definitions = {
 deploy_identity = false
 
 # -----------------------------------------------------------------------------
-# Phase 7 - Azure Virtual Desktop configuration
+# Phase 7 and Phase 9 - Azure Virtual Desktop configuration
 # -----------------------------------------------------------------------------
 
 deploy_avd = true
@@ -68,6 +68,39 @@ host_pools = {
     application_group_type           = "Desktop"
     load_balancer_type               = "BreadthFirst"
     personal_desktop_assignment_type = null
+
+    session_hosts = {
+      enabled = false
+
+      count   = 1
+      vm_size = "Standard_D4s_v5"
+
+      join_type = "EntraID"
+
+      image = {
+        definition = "AK-WIN11-MS"
+        version    = "1.0.0"
+      }
+
+      network = {
+        subnet_key = "sessionhosts"
+      }
+
+      os_disk = {
+        storage_account_type = "Premium_LRS"
+        disk_size_gb         = 128
+        caching              = "ReadWrite"
+      }
+
+      monitoring = {
+        ama_enabled = true
+
+        dcr_keys = [
+          "sessionhosts",
+          "fslogix"
+        ]
+      }
+    }
   }
 
   developers = {
@@ -76,6 +109,38 @@ host_pools = {
     application_group_type           = "Desktop"
     load_balancer_type               = null
     personal_desktop_assignment_type = "Automatic"
+
+    session_hosts = {
+      enabled = false
+
+      count   = 1
+      vm_size = "Standard_D8s_v5"
+
+      join_type = "EntraID"
+
+      image = {
+        definition = "AK-WIN11-MS"
+        version    = "1.0.0"
+      }
+
+      network = {
+        subnet_key = "sessionhosts"
+      }
+
+      os_disk = {
+        storage_account_type = "Premium_LRS"
+        disk_size_gb         = 256
+        caching              = "ReadWrite"
+      }
+
+      monitoring = {
+        ama_enabled = true
+
+        dcr_keys = [
+          "sessionhosts"
+        ]
+      }
+    }
   }
 
   finance = {
@@ -84,6 +149,39 @@ host_pools = {
     application_group_type           = "RemoteApp"
     load_balancer_type               = "DepthFirst"
     personal_desktop_assignment_type = null
+
+    session_hosts = {
+      enabled = false
+
+      count   = 1
+      vm_size = "Standard_D4s_v5"
+
+      join_type = "EntraID"
+
+      image = {
+        definition = "AK-WIN11-MS"
+        version    = "1.0.0"
+      }
+
+      network = {
+        subnet_key = "sessionhosts"
+      }
+
+      os_disk = {
+        storage_account_type = "Premium_LRS"
+        disk_size_gb         = 128
+        caching              = "ReadWrite"
+      }
+
+      monitoring = {
+        ama_enabled = true
+
+        dcr_keys = [
+          "sessionhosts",
+          "fslogix"
+        ]
+      }
+    }
   }
 }
 
@@ -247,3 +345,11 @@ monitoring = {
     }
   }
 }
+
+# -----------------------------------------------------------------------------
+# Phase 9 - Session Host configuration
+# -----------------------------------------------------------------------------
+
+session_host_admin_username = "avdlocaladmin"
+
+avd_registration_artifact_url = "https://raw.githubusercontent.com/Azure/RDS-Templates/master/ARM-wvd-templates/DSC/Configuration.zip"

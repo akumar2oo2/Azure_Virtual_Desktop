@@ -248,3 +248,44 @@ output "action_group_names" {
   description = "Map of Action Group names"
   value       = var.deploy_monitoring ? module.monitoring[0].action_group_names : {}
 }
+
+# -----------------------------------------------------------------------------
+# Phase 9 - Session Host outputs
+# Consumed by future platform phases and used for deployment validation.
+# -----------------------------------------------------------------------------
+
+output "session_host_ids" {
+  description = "Map of Session Host virtual machine IDs grouped by Host Pool"
+
+  value = {
+    for pool_key, session_host_module in module.session_hosts :
+    pool_key => session_host_module.session_host_ids
+  }
+}
+
+output "session_host_names" {
+  description = "Map of Session Host virtual machine names grouped by Host Pool"
+
+  value = {
+    for pool_key, session_host_module in module.session_hosts :
+    pool_key => session_host_module.session_host_names
+  }
+}
+
+output "session_host_network_interface_ids" {
+  description = "Map of Session Host Network Interface IDs grouped by Host Pool"
+
+  value = {
+    for pool_key, session_host_module in module.session_hosts :
+    pool_key => session_host_module.network_interface_ids
+  }
+}
+
+output "session_host_network_interface_names" {
+  description = "Map of Session Host Network Interface names grouped by Host Pool"
+
+  value = {
+    for pool_key, session_host_module in module.session_hosts :
+    pool_key => session_host_module.network_interface_names
+  }
+}

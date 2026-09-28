@@ -292,3 +292,89 @@ locals {
     Phase       = "Phase-8-Monitoring"
   })
 }
+
+# =============================================================================
+# LOCAL VALUES - Phase 9
+# =============================================================================
+# Naming is centralized in the root module so Session Host resources follow
+# platform naming standards while the Session Hosts module remains generic.
+
+locals {
+  # Host Pools with Session Host deployment enabled.
+  enabled_session_host_pools = {
+    for key, pool in var.host_pools :
+    key => pool
+    if pool.session_hosts.enabled
+  }
+
+  # Session Host Azure resource names.
+  #
+  # Example:
+  # AK-AVD-DEV-GENERAL-SH01
+  # AK-AVD-DEV-GENERAL-SH02
+  session_host_names = {
+    for pool_key, pool in local.enabled_session_host_pools :
+    pool_key => {
+      for index in range(pool.session_hosts.count) :
+      format("%s-%02d", pool_key, index + 1) => format(
+        "%s-%s-%s-%s-SH%02d",
+        var.project_prefix,
+        var.project_name,
+        local.env_upper,
+        upper(pool.host_pool_name),
+        index + 1
+      )
+    }
+  }
+
+  # Windows computer names.
+  #
+  # Windows computer names are intentionally shorter than the corresponding
+  # Azure VM resource names.
+  #
+  # Examples:
+  # AKDGENSH01
+  # AKDDEVSH01
+  computer_names = {
+    for pool_key, pool in local.enabled_session_host_pools :
+    pool_key => {
+      for index in range(pool.session_hosts.count) :
+      format("%s-%02d", pool_key, index + 1) => upper(
+        format(
+          "%s%s%sSH%02d",
+          substr(var.project_prefix, 0, 2),
+          substr(var.environment, 0, 1),
+          substr(pool.host_pool_name, 0, 3),
+          index + 1
+        )
+      )
+    }
+  }
+
+  # Network Interface names.
+  #
+  # Example:
+  # AK-AVD-DEV-GENERAL-NIC01
+  # AK-AVD-DEV-GENERAL-NIC02
+  network_interface_names = {
+    for pool_key, pool in local.enabled_session_host_pools :
+    pool_key => {
+      for index in range(pool.session_hosts.count) :
+      format("%s-%02d", pool_key, index + 1) => format(
+        "%s-%s-%s-%s-NIC%02d",
+        var.project_prefix,
+        var.project_name,
+        local.env_upper,
+        upper(pool.host_pool_name),
+        index + 1
+      )
+    }
+  }
+
+  # Phase 9 Session Host tags.
+  session_host_tags = merge(var.tags, {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+    Phase       = "Phase-9-Session-Hosts"
+  })
+}

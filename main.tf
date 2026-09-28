@@ -284,3 +284,92 @@ module "monitoring" {
 
   tags = local.monitoring_tags
 }
+
+# =============================================================================
+# SESSION HOST GOLDEN IMAGE VERSIONS
+# =============================================================================
+# Resolves the Azure Compute Gallery image version selected for each
+# Host Pool with Session Host deployment enabled.
+
+data "azurerm_shared_image_version" "session_host_images" {
+  for_each = local.enabled_session_host_pools
+
+  name                = each.value.session_hosts.image.version
+  image_name          = each.value.session_hosts.image.definition
+  gallery_name        = module.image_gallery.gallery_name
+  resource_group_name = module.image_resource_group.resource_group_name
+}
+
+# =============================================================================
+# SESSION HOST REGISTRATION TOKEN ROTATION
+# =============================================================================
+# Maintains a stable registration-token lifecycle for each Host Pool with
+# Session Host deployment enabled.
+
+resource "time_rotating" "session_host_registration" {
+  for_each = local.enabled_session_host_pools
+
+  rotation_days = 29
+}
+
+# =============================================================================
+# SESSION HOST REGISTRATION INFORMATION
+# =============================================================================
+# Generates temporary registration information for each Host Pool and renews
+# the token through the controlled rotation lifecycle.
+
+resource "azurerm_virtual_desktop_host_pool_registration_info" "session_hosts" {
+  for_each = local.enabled_session_host_pools
+
+  hostpool_id     = module.avd_hostpool[each.key].host_pool_id
+  expiration_date = time_rotating.session_host_registration[each.key].rotation_rfc3339
+}
+
+# =============================================================================
+# SESSION HOSTS
+# =============================================================================
+# Deploys Session Hosts for each enabled Azure Virtual Desktop Host Pool.
+
+module "session_hosts" {
+  for_each = local.enabled_session_host_pools
+
+  source = "./modules/session-hosts"
+
+  resource_group_name = module.avd_resource_group[0].resource_group_name
+  location            = var.location
+  environment         = var.environment
+
+  host_pool_key  = each.key
+  host_pool_id   = module.avd_hostpool[each.key].host_pool_id
+  host_pool_name = module.avd_hostpool[each.key].host_pool_name
+
+  session_hosts = each.value.session_hosts
+
+  session_host_names      = local.session_host_names[each.key]
+  computer_names          = local.computer_names[each.key]
+  network_interface_names = local.network_interface_names[each.key]
+
+  subnet_id = module.networking.subnet_ids[
+    each.value.session_hosts.network.subnet_key
+  ]
+
+  image_id = data.azurerm_shared_image_version.session_host_images[
+    each.key
+  ].id
+
+  dcr_ids = {
+    for dcr_key in each.value.session_hosts.monitoring.dcr_keys :
+    dcr_key => module.monitoring[0].dcr_ids[dcr_key]
+  }
+
+  registration_token = azurerm_virtual_desktop_host_pool_registration_info.session_hosts[
+    each.key
+  ].token
+
+  admin_username = var.session_host_admin_username
+  admin_password = var.session_host_admin_password
+
+  avd_registration_artifact_url = var.avd_registration_artifact_url
+
+  tags = local.session_host_tags
+}
